@@ -10,7 +10,7 @@ This software does exactly what you would do manually to reach peak speeds/effic
 ### Finding maximum Memory OC
 The software will start overclocking your memory until either the mining software crashes or your GPU created invalid shares. This will help in reaching the maximum possible speed.
 
-### Finding minumum Core Clock
+### Finding minimum Core Clock
 After finding the maximum possible memory clock, the software will start reducing the core clock until a significant decrease in speed is detected. This will help decreasing the power consumption and temperatures of your GPUs.
 
 ### Finding minimum Power Limits
