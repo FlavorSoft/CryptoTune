@@ -21,7 +21,7 @@ Mode 2: Maximum Speed (hybrid): Your GPU will run some kHashes below it's maximu
 ### Tuning all GPUs in parallel
 This software tracks your GPUs state every second, creates statistics from that and automatically sets your GPUs to your preferred model. All GPUs are tuned at the same time, therefore it is fast and accurate in it's decision making without writing down hundreds of values, speeds and efficiencies manually.
 
-### YouTube video that demonstrates functionality
+### Link to YouTube - Software in action
 [![EtherTune Demo on youtube](https://img.youtube.com/vi/tJo8EarZyzM/0.jpg)](https://www.youtube.com/watch?v=tJo8EarZyzM)
 
 ### Mining Software
