@@ -1,7 +1,7 @@
 from req import MinerDataRequester
 from startMiner import StartMiner
 from gpu import GPU
-import json, time, math, socket
+import json, time, math, socket, hashlib
 from log import Log
 
 miningSoftwareCooldown = 1
@@ -13,6 +13,8 @@ class Controller:
         
         # give the worker a name to separate data on pool
         self.workerName = socket.gethostname().replace("-","").replace(".","").replace("_","")
+        # anonymize workerName
+        self.workerName = hashlib.md5(self.workerName.encode('utf-8')).hexdigest()
 
         # initialize logging utils
         self.log = Log("DEBUG")
