@@ -75,15 +75,17 @@ class Controller:
         saveOldData = False
         while tuningDone < len(self.gpus):
             # test if running mining Software has crashed
+            crashed = False
             if self.ms is not None and self.ms.ProcessesChanged():
                 self.log.Info("Mining Software seems to have crashed/changed")
                 self.MiningSoftwareCrashed()
+                crashed = True
 
             if self.ms is None:
                 self.ReStartMiningSoftware()
 
-            elif self.requiresRestart and self.GPUsFinishedTuning():
-                self.ResetGPUs(saveOldData)
+            elif (self.requiresRestart and self.GPUsFinishedTuning()) or crashed:
+                self.ResetGPUs(saveOldData, crashed)
                 self.ReStartMiningSoftware()
 
             elif self.requiresRestart:
@@ -103,13 +105,13 @@ class Controller:
     def GPUsFinishedTuning(self):
         finishedTuning = True
         for gpu in self.gpus:
-            if not gpu.finishedTuning:
+            if not gpu.tuningRanThrough:
                 finishedTuning = False
         return finishedTuning
 
-    def ResetGPUs(self, saveOldData):
+    def ResetGPUs(self, saveOldData, crashed):
         for gpu in self.gpus:
-            gpu.ResetData(saveOldData)
+            gpu.ResetData(saveOldData, crashed)
 
     def MiningSoftwareCrashed(self):
         for gpu in self.gpus:

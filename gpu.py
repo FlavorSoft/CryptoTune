@@ -199,9 +199,9 @@ class GPU:
             self.GetData()
 
     # should happen once per clock-tuning run
-    def ResetData(self, saveOldData):
+    def ResetData(self, saveOldData, crashed):
         self.log.Debug("GPU%i: data resettet" % self.id)
-        if saveOldData:
+        if saveOldData and not crashed:
             self.lastData = self.currentData
             self.lastSpeedData = self.currentSpeedData
             self.SaveMaxAvgSpeed()
