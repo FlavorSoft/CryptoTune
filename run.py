@@ -14,15 +14,15 @@ def main(argv):
 
     # defaults for 1 GPU
     mode = 0
-    devIds = [0]
+    devIds = None
     fanSpeeds = [70]
     steps = 5
     nbrOfShares = 3
     nbrOfDatapoints = 30
     margin = 0.3
-    coreUCs = [0]
-    memOCs = [0]
-    powerLimits = [250]
+    coreUCs = []
+    memOCs = []
+    powerLimits = []
 
     for opt, arg in opts:
         print("opt: %s arg: %s" % (opt,arg))

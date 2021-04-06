@@ -47,6 +47,8 @@ class GPU:
 
         # initialy get HW data of device
         self.GetData()
+        if self.powerLimit == None and self.found:
+            self.SetPowerLevel(int(self.powerReadings["default_power_limit"]["$"].split(".")[0]))
 
     def MiningSoftwareCrashed(self):
         # if the mining software crashed, the memory OC was too high

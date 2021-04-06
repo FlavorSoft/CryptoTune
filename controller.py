@@ -32,18 +32,32 @@ class Controller:
         self.devIds = devIds
         self.fanSpeeds = fanSpeeds
 
+        # if no devices were specified, take all
+        if devIds == None:
+            devIds = range(64)
+
         # collect all GPUs connected and initialize
         self.gpus = []
         for i in devIds:
+            # set default values if no enough values were specified
+            if len(powerLimits) <= i:
+                powerLimits.append(None)
+            if len(memOCs) <= i:
+                memOCs.append(0)
+            if len(coreUCs) <= i:
+                coreUCs.append(0)
+            if len(fanSpeeds) <= i:
+                self.fanSpeeds.append(self.fanSpeeds[0])
             gpu = GPU(self.log, i, mode, memOCs[i], coreUCs[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH)
             if gpu.found:
                 self.gpus.append(gpu)
+                # set starting power level
+                self.gpus[i].SetPowerLevel(powerLimits[i])
+                self.log.Info("found GPU%i - %s" % (i, self.gpus[i].name))
             else:
-                self.log.Warning("could not find GPU%i - will continue anyways" % i)
+                self.log.Warning("could not find GPU%i - will work with the found onces" % i)
+                break
 
-            # set starting power level
-            self.gpus[i].SetPowerLevel(powerLimits[i])
-            self.log.Info("found GPU%i - %s" % (i, self.gpus[i].name))
 
         self.log.Info("initialized %i GPUs" % len(self.gpus))
 
@@ -53,7 +67,7 @@ class Controller:
             exit(1)
 
         # initialize mining data requester - miner is not started yet, so we cannot request any data for now
-        self.req = MinerDataRequester(miner, "127.0.0.1", 3333, "/stat")
+        self.req = MinerDataRequester(self.log, miner, "127.0.0.1", 3333, "/stat")
 
         # first tune mem and core clocks until all GPUs are finished
         tuningDone = 0
@@ -129,12 +143,13 @@ class Controller:
             fans += str(self.fanSpeeds[i]) + " "
 
         # initialize MiningSoftware and start
-        self.ms = StartMiner(self.workerName, "gminer", devs, fans, memOCs, coreUCs)
+        self.ms = StartMiner(self.log, self.workerName, "gminer", devs, fans, memOCs, coreUCs)
 
         # wait for the first API request to answer correctly
         res = None
         waited = 0
         while res is None:
+            time.sleep(1)
             waited += 1
             res = self.req.getData()
             if waited > maxWaitForMiningSoftwareApi:

@@ -3,13 +3,14 @@ from responseParser import ResponseParser
 
 
 class MinerDataRequester:
-    def __init__(self, miner, host, port, apiPath):
+    def __init__(self, log, miner, host, port, apiPath):
+        self.log = log
         self.host = host
         self.port = port
         self.apiPath = apiPath
         self.responseParser = ResponseParser(miner)
         self.path = "http://%s:%i%s" % (self.host, self.port, self.apiPath)
-        print("will use path %s" % self.path)
+        self.log.Debug("will use path %s" % self.path)
 
     def getData(self):
         try:
