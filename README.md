@@ -4,7 +4,7 @@ Python script to automatically find optimized and stable GPU overclock settings 
 ## Warning
 As this software needs to be run as admin, do not use it if you are not sure what you are doing! The software will not try to steal your data in any way, but **i'm only some dude from the internet** so please do not trust me on that :)
 
-## What it does
+# What it does
 This software does exactly what you would do manually to reach peak speeds/efficiency on your GPUs - but in parallel and without the effort.
 
 ### Finding maximum Memory OC
@@ -20,6 +20,9 @@ Mode 2: Maximum Speed (hybrid): Your GPU will run some kHashes below it's maximu
 
 ### Tuning all GPUs in parallel
 This software tracks your GPUs state every second, creates statistics from that and automatically sets your GPUs to your preferred model. All GPUs are tuned at the same time, therefore it is fast and accurate in it's decision making without writing down hundreds of values, speeds and efficiencies manually.
+
+### YouTube video that demonstrates functionality
+[![EtherTune Demo on youtube](https://img.youtube.com/vi/tJo8EarZyzM/0.jpg)](https://www.youtube.com/watch?v=tJo8EarZyzM)
 
 ### Mining Software
 There is a miner (GMiner 2.49) included, but as code cannot be easily checked i strongly recommend you download and **add your own mining binaries** and rename (if needed) to "miner.exe".
