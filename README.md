@@ -36,8 +36,8 @@ Currenty, the tool comes with some limitation
 Following requirements need to be met in order for the tool to work properly
 - NVIDIA Driver installed (especially nvidia-smi)
 - Up-to-date Windows 10
-- [Python 3.6 or higher! installed](https://www.python.org/downloads/)
-- executing script with Administrative Access
+- [Python 3.6 or higher installed](https://www.python.org/downloads/)
+- executing script with Administrative Access (open CMD with admin privileges or right-click "start.bat" -> run as admin)
 - installed packages from requirements.txt, can be done via **"pip install -r requirements.txt"**
 
 ## Usage
