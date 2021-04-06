@@ -79,9 +79,15 @@ class Controller:
                 self.log.Info("Mining Software seems to have crashed/changed")
                 self.MiningSoftwareCrashed()
 
-            if self.requiresRestart:
+            if self.ms is None:
+                self.ReStartMiningSoftware()
+
+            elif self.requiresRestart and self.GPUsFinishedTuning():
                 self.ResetGPUs(saveOldData)
                 self.ReStartMiningSoftware()
+
+            elif self.requiresRestart:
+                self.log.Debug("restart pending but not all GPUs are finished with their tuning")
 
             saveOldData = True
             minerData = self.req.getData()
@@ -93,6 +99,13 @@ class Controller:
         for gpu in self.gpus:
             plPerc = math.ceil(100.0 / int(gpu.powerReadings["default_power_limit"]["$"].split(".")[0]) * gpu.powerLimit)
             self.log.Info("GPU%i: Max Memory Overclock: %i\tMax Core UnderClock: %i\tMin Power Level: %iW (%i%%)" % (gpu.id, gpu.memOC, gpu.coreUC, gpu.powerLimit, plPerc))
+
+    def GPUsFinishedTuning(self):
+        finishedTuning = True
+        for gpu in self.gpus:
+            if not gpu.finishedTuning:
+                finishedTuning = False
+        return finishedTuning
 
     def ResetGPUs(self, saveOldData):
         for gpu in self.gpus:
