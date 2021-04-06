@@ -21,7 +21,7 @@ Mode 2: Maximum Speed (hybrid): Your GPU will run some kHashes below it's maximu
 ### Tuning all GPUs in parallel
 This software tracks your GPUs state every second, creates statistics from that and automatically sets your GPUs to your preferred model. All GPUs are tuned at the same time, therefore it is fast and accurate in it's decision making without writing down hundreds of values, speeds and efficiencies manually.
 
-### Link to YouTube - Software in action
+### Link to YouTube - Software in actiong
 [![EtherTune Demo on youtube](https://img.youtube.com/vi/tJo8EarZyzM/0.jpg)](https://www.youtube.com/watch?v=tJo8EarZyzM)
 
 ### Mining Software
@@ -36,8 +36,9 @@ Currenty, the tool comes with some limitation
 Following requirements need to be met in order for the tool to work properly
 - NVIDIA Driver installed (especially nvidia-smi)
 - Up-to-date Windows 10
+- [Python 3.6 or higher! installed](https://www.python.org/downloads/)
 - executing script with Administrative Access
-- installed software from requirements.txt, can be done via **"pip install -r requirements.txt"**
+- installed packages from requirements.txt, can be done via **"pip install -r requirements.txt"**
 
 ## Usage
 The tool can be run as-is via the command: **"python run.py"**, it will pick default values for tuning which might not be perfect - but will work. In order to change clocks, **it is required to run the executing command line or batch-script with admin privileges (see warning above!).**
