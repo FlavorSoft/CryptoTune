@@ -5,7 +5,7 @@ Python script to automatically find optimized and stable GPU overclock settings 
 As this software needs to be run as admin, do not use it if you are not sure what you are doing! The software will not try to steal your data in any way, but **i'm only some dude from the internet** so please do not trust me on that :)
 
 ## What it does
-This software does exactly what you would do manually to reach peak speeds/efficiency on your GPUs - but in parallel and without too much effort.
+This software does exactly what you would do manually to reach peak speeds/efficiency on your GPUs - but in parallel and without the effort.
 
 ### Finding maximum Memory OC
 The software will start overclocking your memory until either the mining software crashes or your GPU created invalid shares. This will help in reaching the maximum possible speed.
@@ -15,8 +15,8 @@ After finding the maximum possible memory clock, the software will start reducin
 
 ### Finding minimum Power Limits
 After clocks are fine tuned, each GPUs power limit will be reduced to lower temperatures and increase efficiency (lower power costs). There are two modes to choose from:
-1) Maximum Efficiency (default): your GPU will probably not reach it's top hash rate, but it will be the most efficient (power/hash) you can achieve
-2) Maximum Speed (hybrid): Your GPU will run some kHashes below it's maximum speed but can achieve this with a lot less power than default (see "margin"-parameter)
+Mode 1: Maximum Efficiency (default): your GPU will probably not reach it's top hash rate, but it will be the most efficient (power/hash) you can achieve
+Mode 2: Maximum Speed (hybrid): Your GPU will run some kHashes below it's maximum speed but can achieve this with a lot less power than default (see "margin"-parameter)
 
 ### Tuning all GPUs in parallel
 This software tracks your GPUs state every second, creates statistics from that and automatically sets your GPUs to your preferred model. All GPUs are tuned at the same time, therefore it is fast and accurate in it's decision making without writing down hundreds of values, speeds and efficiencies manually.

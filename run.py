@@ -31,35 +31,35 @@ def main(argv):
             sys.exit()
         elif opt in ("-t", "--mode"):
             mode = int(arg)
-        elif opt in ("-d", "devices"):
+        elif opt in ("-d", "--devices"):
             arr = arg.split(",")
             devIds = []
             for item in arr:
                 devIds.append(int(item))
-        elif opt in ("-f", "fans"):
+        elif opt in ("-f", "--fans"):
             arr = arg.split(",")
             fanSpeeds = []
             for item in arr:
                 fanSpeeds.append(int(item))
-        elif opt in ("-s", "steps"):
+        elif opt in ("-s", "--steps"):
             steps = int(arg)
-        elif opt in ("-x", "shares"):
+        elif opt in ("-x", "--shares"):
             nbrOfShares = int(arg)
-        elif opt in ("-y", "datapoints"):
+        elif opt in ("-y", "--datapoints"):
             nbrOfDatapoints = int(arg)
-        elif opt in ("-o", "offset"):
+        elif opt in ("-o", "--offset"):
             margin = float(arg)
-        elif opt in ("-c", "coreUC"):
+        elif opt in ("-c", "--coreUC"):
             arr = arg.split(",")
             coreUCs = []
             for item in arr:
                 coreUCs.append(int(item))
-        elif opt in ("-m", "memOC"):
+        elif opt in ("-m", "--memOC"):
             arr = arg.split(",")
             memOCs = []
             for item in arr:
                 memOCs.append(int(item))
-        elif opt in ("-p", "powerLimit"):
+        elif opt in ("-p", "--powerLimit"):
             arr = arg.split(",")
             powerLimits = []
             for item in arr:

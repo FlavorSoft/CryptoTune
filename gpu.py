@@ -23,8 +23,8 @@ class GPU:
         
         # initialize runtime values
         self.maxAvg = 0
-        self.maxMemClockFound = True
-        self.minCoreClockFound = True
+        self.maxMemClockFound = False
+        self.minCoreClockFound = False
         self.minPowerLimitFound = False
         self.efficiency = 0
 
@@ -95,6 +95,9 @@ class GPU:
         if not self.IsSufficientData(minerData):
             return False
 
+        # from now on, we can assume that the tuning has taken effect
+        self.tuningRanThrough = True
+
         # MEMORY OVERCLOCK NEEDS A RESTART IN MINING SOFTWARE
         # only change memory oc if no prior change is waiting to be applied
         # if no invalid shares were created and enough valid shares have been created, it is time to increase the overclock!
@@ -113,13 +116,12 @@ class GPU:
         # POWER LIMIT CHANGE CAN BE APPLIED WITHOUT MINING SOFTWARE RESTART
         if self.maxMemClockFound and self.minCoreClockFound and not self.requiresRestart:
             if self.powerLimitChanged:
-                self.ResetData(True)
+                self.ResetData(True, False)
             # if both clocks have not been changed and power level was not adjusted
             else:
                 self.log.Debug("GPU%i: Tuning Power Limit" % (self.id))
                 self.ReducePowerLimit(minerData)
 
-        self.tuningRanThrough = True
         return self.maxMemClockFound and self.minCoreClockFound and self.minPowerLimitFound
 
     def InvalidDataCreated(self):
