@@ -17,7 +17,7 @@ Following requirements need to be met in order for the tool to work properly
 - NVIDIA Driver installed (especially nvidia-smi)
 - Up-to-date Windows 10
 - executing script with Administrative Access
-- installed software from requirements.txt
+- installed software from requirements.txt, can be done via **"pip install -r requirements.txt"**
 
 ## Usage
 The tool can be run as-is via the command: **"python run.py"**, it will pick default values for tuning which might not be perfect - but will work. In order to change clocks, **it is required to run the executing command line or batch-script with admin privileges (see warning above!).**
