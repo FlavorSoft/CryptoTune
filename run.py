@@ -15,7 +15,7 @@ def main(argv):
     # defaults for 1 GPU
     mode = 0
     devIds = None
-    fanSpeeds = [70]
+    fanSpeeds = []
     steps = 5
     nbrOfShares = 3
     nbrOfDatapoints = 30

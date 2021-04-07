@@ -1,16 +1,20 @@
 
 from subprocess import Popen, PIPE
-import xmljson, json
+import xmljson, json, platform
 from lxml.etree import fromstring, tostring
 
 wattSteps = 2
 
 class GPU:
-    def __init__(self, log, id, mode, memOC, coreUC, steps, powerLimit, nbrOfShares, nbrOfDatapoints, marginInMH):
+    def __init__(self, log, id, mode, memOC, coreUC, fanSpeed, steps, powerLimit, nbrOfShares, nbrOfDatapoints, marginInMH):
         self.log = log
         self.id = id
         self.found = False
         self.mode = mode
+        self.fanSpeed = fanSpeed
+        self.isWindows = self.IsWindowsOS()
+        self.lastShareCount = 0
+        self.minerData = None
 
         # speed data via mining software
         self.currentSpeedData = []
@@ -35,6 +39,9 @@ class GPU:
         self.nbrOfShares = nbrOfShares
         self.maxAvgSpeed = 0
 
+        # if this is a unix environment, we need to setup fans and clocks now
+        if not self.isWindows:
+            self.unixInit()
 
         if nbrOfDatapoints is None:
             nbrOfDatapoints = 10
@@ -50,20 +57,42 @@ class GPU:
         if self.powerLimit == None and self.found:
             self.SetPowerLevel(int(self.powerReadings["default_power_limit"]["$"].split(".")[0]))
 
+    def unixInit(self):
+        self.NVidiaSettings("fan", self.fanSpeed)
+        self.NVidiaSettings("memOC", self.memOC)
+        self.NVidiaSettings("coreUC", self.coreUC)
+
     def MiningSoftwareCrashed(self):
         # if the mining software crashed, the memory OC was too high
         self.maxMemClockFound = True
         self.changeMemOC(-1 * self.steps)
 
+    def IsWindowsOS(self):
+        if platform.system() == "Windows":
+            return True
+        else:
+            return False
+
     # change memory overclock
     def changeMemOC(self, val):
-        self.requiresRestart = True
+        if self.isWindows:
+            self.requiresRestart = True
+        else:
+            self.ResetData(True, False)
         self.memOC += val
+        if not self.isWindows:
+            self.NVidiaSettings("memOC", self.memOC)
 
     # change core underclock
     def changeCoreUC(self, val):
-        self.requiresRestart = True
+        if self.isWindows:
+            self.requiresRestart = True
+        else:
+            self.ResetData(True, False)
+        
         self.coreUC += val
+        if not self.isWindows:
+            self.NVidiaSettings("coreUC", self.coreUC)
 
     # change power limit
     def changePowerLimit(self, val):
@@ -90,6 +119,7 @@ class GPU:
         
         # save data as it is valid
         self.AddSpeedData(minerData.speed)
+        self.minerData = minerData
 
         # check if enough data has been created
         if not self.IsSufficientData(minerData):
@@ -140,8 +170,8 @@ class GPU:
 
     # check if gpu created enough valid share
     def IsSufficientData(self, minerData):
-        if minerData.accepted < self.nbrOfShares:
-            self.log.Debug("GPU%i: not created enough valid shares yet (%i/%i)" % (self.id, minerData.accepted, self.nbrOfShares))
+        if minerData.accepted - self.lastShareCount < self.nbrOfShares or len(self.currentData) < self.nbrOfDatapoints:
+            self.log.Debug("GPU%i: not created enough valid shares or datapoints yet shares (%i/%i) - datapoints (%i/%i)" % (self.id, minerData.accepted - self.lastShareCount, self.nbrOfShares, len(self.currentData), self.nbrOfDatapoints))
             return False
         return True
 
@@ -207,6 +237,7 @@ class GPU:
             self.lastData = self.currentData
             self.lastSpeedData = self.currentSpeedData
             self.SaveMaxAvgSpeed()
+            self.lastShareCount = self.minerData.accepted
         self.currentData = []
         self.currentSpeedData = []
         self.requiresRestart = False
@@ -278,7 +309,7 @@ class GPU:
             # print(command)
             data = self.NSMI(command)
             if data == None:
-                raise Exception("cannot get GPU#%i data" % id)
+                raise Exception("cannot get GPU#%i data" % self.id)
 
             gpu = data["nvidia_smi_log"]["gpu"]
 
@@ -317,8 +348,31 @@ class GPU:
             self.log.Warning("GPU could not be found or data is missing via nvidia-smi")
             self.log.Warning(str(e))
 
+    def NVidiaSettings(self,name, value):
+        command = None
+        if name == "fan":
+            command = "nvidia-settings -a [gpu:%i]/GPUFanControlState=1 -a [fan:0]/GPUTargetFanSpeed=%i" % (self.id, value)
+        if name == "memOC":
+            command = "nvidia-settings -a [gpu:%i]/GPUMemoryTransferRateOffset[3]=%i" % (self.id, value)
+        if name == "coreUC":
+            command = "nvidia-settings -a [gpu:%i]/GPUGraphicsClockOffset[2]=%i" % (self.id, value)
+        
+        if name == None:
+            self.log.Error("invalid value for change in nvidia-settings")
+            return False
+
+        process = Popen(command.split(" "), stdout=PIPE)
+        (output, err) = process.communicate()
+        exit_code = process.wait()
+        if exit_code == 0:
+            return True
+        else:
+            self.log.Warning("could not change nvidia-settings")
+            self.log.Warning("Code: %i:\n%s" %(exit_code, output))
+            return False
+
     def NSMI(self, command):
-        process = Popen(["powershell", command], stdout=PIPE)
+        process = Popen(command.split(" "), stdout=PIPE)
         (output, err) = process.communicate()
         exit_code = process.wait()
         if exit_code == 0:
@@ -331,29 +385,30 @@ class GPU:
 
     def NSMISet(self, name, value):
         command = "nvidia-smi -i %i -%s %s" % (self.id, name, value)
-        self.log.Debug("SMI Command: %s" % command)
-        process = Popen(["powershell", command], stdout=PIPE)
+        self.log.Debug("GPU%i: SMI Command: %s" % (self.id, command))
+        process = Popen(command.split(" "), stdout=PIPE)
         (output, err) = process.communicate()
         exit_code = process.wait()
         if exit_code == 0:
             return True
         else:
-            self.log.Warning("could not execute nvidia-smi command: \"%s\"" % command)
+            self.log.Warning("GPU%i: could not execute nvidia-smi command: \"%s\"" % (self.id, command))
             #print("Code: %i:\n%s" %(exit_code, err))
             return False
 
     def SetPowerLevel(self, wattage):
         if wattage is None:
-            wattage = self.powerReadings["default_power_limit"]["$"].split(".")[0]
+            wattage = int(self.powerReadings["default_power_limit"]["$"].split(".")[0])
         if self.NSMISet("pl", wattage):
             self.GetData()
-            if int(self.powerReadings["power_limit"]["$"].split(".")[0]) == wattage:
-                self.log.Info("power level set to %s W" % wattage)
+            istWattage = int(self.powerReadings["power_limit"]["$"].split(".")[0])
+            if istWattage == wattage:
+                self.log.Info("GPU%i: power level set to %s W" % (self.id, wattage))
                 return True
             else:
-                self.log.Warning("could not set wattage. Command executed but: SOLL: %s vs. IST: %s" % (wattage, self.powerReadings["power_limit"]["$"].split(".")[0]))
+                self.log.Warning("GPU%i: could not set wattage. Command executed but: SOLL: \"%i\" vs. IST: \"%i\"" % (self.id, wattage, istWattage))
                 return False
-        self.log.Error("could not set wattage. Command execution failed")
+        self.log.Error("GPU%i: could not set wattage. Command execution failed" % self.id)
         return False
 
     def SetMinPowerLevel(self):

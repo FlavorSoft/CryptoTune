@@ -3,6 +3,7 @@ from startMiner import StartMiner
 from gpu import GPU
 import json, time, math, socket, hashlib
 from log import Log
+import platform, subprocess
 
 miningSoftwareCooldown = 1
 maxWaitForMiningSoftwareApi = 3
@@ -10,7 +11,7 @@ sleepBetweenTuningRuns = 1
 
 class Controller:
     def __init__(self, miner, mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, marginInMH, coreUCs, memOCs, powerLimits):
-        
+   
         # give the worker a name to separate data on pool
         self.workerName = socket.gethostname().replace("-","").replace(".","").replace("_","")
         # anonymize workerName
@@ -19,8 +20,10 @@ class Controller:
         # initialize logging utils
         self.log = Log("DEBUG")
 
-        # mining software
-        self.ms = None
+        # prepare unix systems
+        if platform.system() != "Windows":
+            subprocess.call(["chmod", "a+x", "./prepareUnix.sh"])
+            subprocess.call(["./prepareUnix.sh"])
 
         # utility
         if mode < 0 or mode > 1:
@@ -32,7 +35,6 @@ class Controller:
 
         # save base hw settings
         self.devIds = devIds
-        self.fanSpeeds = fanSpeeds
 
         # if no devices were specified, take all
         if devIds == None:
@@ -40,7 +42,8 @@ class Controller:
 
         # collect all GPUs connected and initialize
         self.gpus = []
-        for i in devIds:
+        ids = []
+        for i in range(len(devIds)):
             # set default values if no enough values were specified
             if len(powerLimits) <= i:
                 powerLimits.append(None)
@@ -49,14 +52,16 @@ class Controller:
             if len(coreUCs) <= i:
                 coreUCs.append(0)
             if len(fanSpeeds) <= i:
-                self.fanSpeeds.append(self.fanSpeeds[0])
-            gpu = GPU(self.log, i, mode, memOCs[i], coreUCs[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH)
+                fanSpeeds.append(70)
+            gpu = GPU(self.log, devIds[i], mode, memOCs[i], coreUCs[i], fanSpeeds[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH)
             if gpu.found:
+                ids.append(devIds[i])
                 self.gpus.append(gpu)
                 # set starting power level
                 self.gpus[i].SetPowerLevel(powerLimits[i])
                 self.log.Info("found GPU%i - %s" % (i, self.gpus[i].name))
             else:
+                fanSpeeds.remove(fanSpeeds[len(fanSpeeds) - 1])
                 self.log.Warning("could not find GPU%i - will work with the found onces" % i)
                 break
 
@@ -68,8 +73,11 @@ class Controller:
             self.log.Error("could not find any GPUs with given IDs %s - cannot tune clocks and will exit now" % devIds)
             exit(1)
 
+        # initialize mining software starter
+        self.ms = StartMiner(self.log, self.workerName, miner, ids, fanSpeeds)
+
         # initialize mining data requester - miner is not started yet, so we cannot request any data for now
-        self.req = MinerDataRequester(self.log, miner, "127.0.0.1", 3333, "/stat")
+        self.req = MinerDataRequester(self.log, miner, self.ms)
 
         # first tune mem and core clocks until all GPUs are finished
         tuningDone = 0
@@ -78,12 +86,13 @@ class Controller:
         while tuningDone < len(self.gpus):
             # test if running mining Software has crashed
             crashed = False
-            if self.ms is not None and self.ms.ProcessesChanged():
+            if self.ms.isRunning and self.ms.ProcessesChanged():
                 self.log.Info("Mining Software seems to have crashed/changed")
                 self.MiningSoftwareCrashed()
                 crashed = True
 
-            if self.ms is None:
+            # start mining software if it is not running
+            if not self.ms.isRunning:
                 self.ReStartMiningSoftware()
 
             elif (self.requiresRestart and self.GPUsFinishedTuning()) or crashed:
@@ -140,27 +149,22 @@ class Controller:
         
         self.log.Debug("clocktuning finished for %i/%i GPUs" % (clockingDone, len(self.gpus)))
         return clockingDone >= len(self.gpus)
-            
 
     def ReStartMiningSoftware(self):
         # stop miner if it was already running
-        if self.ms is not None:
+        if self.ms is not None and self.ms.isRunning:
             self.ms.Stop()
             time.sleep(miningSoftwareCooldown)
         
         # collect GPU OC/UC Data
         memOCs = ""
         coreUCs = ""
-        fans = ""
-        devs = ""
         for i in range(len(self.gpus)):
-            devs += str(i) + " "
             memOCs += str(self.gpus[i].memOC) + " "
             coreUCs += str(self.gpus[i].coreUC) + " "
-            fans += str(self.fanSpeeds[i]) + " "
 
-        # initialize MiningSoftware and start
-        self.ms = StartMiner(self.log, self.workerName, "gminer", devs, fans, memOCs, coreUCs)
+        # start MiningSoftware with gatheres settings
+        self.ms.Start(memOCs, coreUCs)
 
         # wait for the first API request to answer correctly
         res = None
