@@ -167,8 +167,8 @@ class GPU:
 
     # check if gpu created enough valid share
     def IsSufficientData(self, minerData):
-        if minerData.accepted < self.nbrOfShares:
-            self.log.Debug("GPU%i: not created enough valid shares yet (%i/%i)" % (self.id, minerData.accepted, self.nbrOfShares))
+        if minerData.accepted < self.nbrOfShares or len(self.currentData) < self.nbrOfDatapoints:
+            self.log.Debug("GPU%i: not created enough valid shares or datapoints yet shares (%i/%i) - datapoints (%i/%i)" % (self.id, minerData.accepted, self.nbrOfShares, len(self.currentData), self.nbrOfDatapoints))
             return False
         return True
 
