@@ -67,7 +67,7 @@ class Controller:
             exit(1)
 
         # initialize mining software starter
-        self.ms = StartMiner(self.log, self.workerName, miner, ids, self.fanSpeeds)
+        self.ms = StartMiner(self.log, self.workerName, miner, ids, fanSpeeds)
 
         # initialize mining data requester - miner is not started yet, so we cannot request any data for now
         self.req = MinerDataRequester(self.log, miner, self.ms)
