@@ -1,37 +1,84 @@
 
 import os, pathlib
 import subprocess
-import time, signal
+import time, signal, json, platform
 from subprocess import Popen, PIPE
 
 class StartMiner:
-    def __init__(self, log, workerName, miner, devIds, fans, memOCs, coreUCs):
+    def __init__(self, log, workerName, miner, devIds, fans):
         self.log = log
         self.proc = None
         self.subChilds = None
+        self.workerName = workerName
+        self.config = None
+        self.devIds = self.ArrToParam(devIds)
+        self.fans = self.ArrToParam(fans)
+        self.isRunning = False
+        self.exePath = None
+        self.windowsOS = self.IsWindowsOS()
+
         curr = pathlib.Path(__file__).parent.absolute()
-        minerFolder = "%s\\%s" % (curr, "miners")
+        minerFolder = os.path.join(curr, "miners")
         dirs = os.listdir(minerFolder)
         for folder in dirs:
             if folder.find(miner) == 0:
-                self.Start("%s\\%s" % (minerFolder, folder), workerName, devIds, fans, memOCs, coreUCs)
+                mFolder = os.path.join(minerFolder, folder)
+                self.GetConfig(mFolder)
+                self.exePath = self.GetExePath(mFolder)
+                #self.Start("%s\\%s" % (minerFolder, folder), workerName, devIds, fans, memOCs, coreUCs)
 
+    def ArrToParam(self, arr):
+        res = ""
+        for item in arr:
+            res += str(item) + " "
+        return res
 
-    def Start(self, activefolder, workerName, devIds, fans, memOCs, coreUCs):
-        exePath = activefolder + "\\miner.exe"
+    def IsWindowsOS(self):
+        if platform.system() == "Windows":
+            return True
+        else:
+            return False
+
+    def GetExePath(self, folder):
+        if self.windowsOS:
+            return "%s\\miner.exe" % folder
+        return "%s/miner" % folder
+
+    def GetConfig(self, miningSoftwareFolder):
+        try:
+            configPath = os.path.join(miningSoftwareFolder, "config.json")
+            self.config = json.loads(open(configPath, 'r').read())
+        except Exception as e: 
+            self.log.Error("could not find or parse miner software config file %s" % configPath)
+            self.log.Error(e)
+
+    def GetRequesterPath(self):
+        return "%s:%i%s" % (self.config["api"]["host"], self.config["api"]["port"], self.config["api"]["path"])
+
+    def Start(self, memOCs, coreUCs):
         #print ("ExePath: %s" % exePath)
-        configPath = activefolder + "\\config.cfg"
+        
         #print (configPath)
-        parameters = open(configPath, 'r').read().replace("#core#", str(coreUCs)).replace("#mem#", str(memOCs)).replace("#fan#", str(fans)).replace("#dev#", str(devIds)).replace("#worker#", workerName)
+        parameters = self.config["parameters"].replace("#core#", str(coreUCs)).replace("#mem#", str(memOCs)).replace("#fan#", str(self.fans)).replace("#dev#", str(self.devIds)).replace("#worker#", self.workerName)
+        self.StartProcess(parameters)
         self.log.Debug(parameters)
-        self.log.Debug("will start %s\\miner" % activefolder)
-        self.proc = subprocess.Popen(["powershell", exePath, parameters], creationflags = subprocess.CREATE_NEW_CONSOLE)
+        self.log.Debug("will start miner %s" % self.exePath)
         self.log.Debug("started miner with pid: %i" % self.proc.pid)
         time.sleep(1)
         self.GetMinerChildProcessID()
+        self.isRunning = True
+
+    def StartProcess(self, parameters):
+        if self.IsWindowsOS:
+            cmd = "powershell"
+        else:
+            cmd = "/bin/bash"
+        self.proc = subprocess.Popen([cmd, self.exePath, parameters], creationflags = subprocess.CREATE_NEW_CONSOLE)
+        
 
     def Stop(self):
         subprocess.call(['taskkill', '/F', '/T', '/PID',  str(self.proc.pid)])
+        self.isRunning = False
 
     def GetMinerChildProcessID(self):
         self.directChilds = self.GetSubProcessIDs(self.proc.pid)
@@ -62,11 +109,8 @@ class StartMiner:
 
         return False
 
-    
-
-    def GetSubProcessIDs(self, pid):
+    def GetSubProcessIDsWindows(self, pid):
         command = "Get-WmiObject Win32_Process | Select ProcessID, ParentProcessID"
-        #print("PID command: \n%s" % command)
         process = Popen(["powershell", command], stdout=PIPE)
         (output, err) = process.communicate()
         exit_code = process.wait()
@@ -84,6 +128,16 @@ class StartMiner:
             self.log.Warning("could not get subprocesses: \"%s\"" % command)
             self.log.Debug("Code: %i:\n%s" %(exit_code, err))
             return None
+
+    def GetSubProcessIDsUnix(self, pid):
+        self.log.Error("can't get child processes, not yet implemented")
+        return None
+
+    def GetSubProcessIDs(self, pid):
+        if self.IsWindowsOS():
+            return self.GetSubProcessIDsWindows(pid)
+        else:
+            return self.GetSubProcessIDsUnix(pid)
 
     def Strip(self, txt):
         while txt.find("  ") >= 0:

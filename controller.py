@@ -10,7 +10,7 @@ sleepBetweenTuningRuns = 1
 
 class Controller:
     def __init__(self, miner, mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, marginInMH, coreUCs, memOCs, powerLimits):
-        
+   
         # give the worker a name to separate data on pool
         self.workerName = socket.gethostname().replace("-","").replace(".","").replace("_","")
         # anonymize workerName
@@ -18,9 +18,6 @@ class Controller:
 
         # initialize logging utils
         self.log = Log("DEBUG")
-
-        # mining software
-        self.ms = None
 
         # utility
         if mode < 0 or mode > 1:
@@ -40,6 +37,7 @@ class Controller:
 
         # collect all GPUs connected and initialize
         self.gpus = []
+        ids = []
         for i in devIds:
             # set default values if no enough values were specified
             if len(powerLimits) <= i:
@@ -48,10 +46,12 @@ class Controller:
                 memOCs.append(0)
             if len(coreUCs) <= i:
                 coreUCs.append(0)
-            if len(fanSpeeds) <= i:
-                self.fanSpeeds.append(self.fanSpeeds[0])
             gpu = GPU(self.log, i, mode, memOCs[i], coreUCs[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH)
             if gpu.found:
+                
+                if len(fanSpeeds) <= i and i > 0:
+                    self.fanSpeeds.append(self.fanSpeeds[0])
+                ids.append(i)
                 self.gpus.append(gpu)
                 # set starting power level
                 self.gpus[i].SetPowerLevel(powerLimits[i])
@@ -68,8 +68,11 @@ class Controller:
             self.log.Error("could not find any GPUs with given IDs %s - cannot tune clocks and will exit now" % devIds)
             exit(1)
 
+        # initialize mining software starter
+        self.ms = StartMiner(self.log, self.workerName, miner, ids, self.fanSpeeds)
+
         # initialize mining data requester - miner is not started yet, so we cannot request any data for now
-        self.req = MinerDataRequester(self.log, miner, "127.0.0.1", 3333, "/stat")
+        self.req = MinerDataRequester(self.log, miner, self.ms)
 
         # first tune mem and core clocks until all GPUs are finished
         tuningDone = 0
@@ -78,12 +81,13 @@ class Controller:
         while tuningDone < len(self.gpus):
             # test if running mining Software has crashed
             crashed = False
-            if self.ms is not None and self.ms.ProcessesChanged():
+            if self.ms.isRunning and self.ms.ProcessesChanged():
                 self.log.Info("Mining Software seems to have crashed/changed")
                 self.MiningSoftwareCrashed()
                 crashed = True
 
-            if self.ms is None:
+            # start mining software if it is not running
+            if not self.ms.isRunning:
                 self.ReStartMiningSoftware()
 
             elif (self.requiresRestart and self.GPUsFinishedTuning()) or crashed:
@@ -140,27 +144,23 @@ class Controller:
         
         self.log.Debug("clocktuning finished for %i/%i GPUs" % (clockingDone, len(self.gpus)))
         return clockingDone >= len(self.gpus)
-            
 
     def ReStartMiningSoftware(self):
         # stop miner if it was already running
-        if self.ms is not None:
+        if self.ms is not None and self.ms.isRunning:
             self.ms.Stop()
             time.sleep(miningSoftwareCooldown)
         
         # collect GPU OC/UC Data
         memOCs = ""
         coreUCs = ""
-        fans = ""
-        devs = ""
         for i in range(len(self.gpus)):
-            devs += str(i) + " "
             memOCs += str(self.gpus[i].memOC) + " "
             coreUCs += str(self.gpus[i].coreUC) + " "
-            fans += str(self.fanSpeeds[i]) + " "
 
-        # initialize MiningSoftware and start
-        self.ms = StartMiner(self.log, self.workerName, "gminer", devs, fans, memOCs, coreUCs)
+        # start MiningSoftware with gatheres settings
+        print("START IT!")
+        self.ms.Start(memOCs, coreUCs)
 
         # wait for the first API request to answer correctly
         res = None

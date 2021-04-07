@@ -1,6 +1,6 @@
 
 from subprocess import Popen, PIPE
-import xmljson, json
+import xmljson, json, platform
 from lxml.etree import fromstring, tostring
 
 wattSteps = 2
@@ -11,6 +11,8 @@ class GPU:
         self.id = id
         self.found = False
         self.mode = mode
+
+        self.isWindows = self.IsWindowsOS()
 
         # speed data via mining software
         self.currentSpeedData = []
@@ -54,6 +56,12 @@ class GPU:
         # if the mining software crashed, the memory OC was too high
         self.maxMemClockFound = True
         self.changeMemOC(-1 * self.steps)
+
+    def IsWindowsOS(self):
+        if platform.system() == "Windows":
+            return True
+        else:
+            return False
 
     # change memory overclock
     def changeMemOC(self, val):
@@ -318,7 +326,7 @@ class GPU:
             self.log.Warning(str(e))
 
     def NSMI(self, command):
-        process = Popen(["powershell", command], stdout=PIPE)
+        process = Popen(command.split(" "), stdout=PIPE)
         (output, err) = process.communicate()
         exit_code = process.wait()
         if exit_code == 0:
@@ -332,7 +340,7 @@ class GPU:
     def NSMISet(self, name, value):
         command = "nvidia-smi -i %i -%s %s" % (self.id, name, value)
         self.log.Debug("SMI Command: %s" % command)
-        process = Popen(["powershell", command], stdout=PIPE)
+        process = Popen(command.split(" "), stdout=PIPE)
         (output, err) = process.communicate()
         exit_code = process.wait()
         if exit_code == 0:
@@ -344,14 +352,15 @@ class GPU:
 
     def SetPowerLevel(self, wattage):
         if wattage is None:
-            wattage = self.powerReadings["default_power_limit"]["$"].split(".")[0]
+            wattage = int(self.powerReadings["default_power_limit"]["$"].split(".")[0])
         if self.NSMISet("pl", wattage):
             self.GetData()
-            if int(self.powerReadings["power_limit"]["$"].split(".")[0]) == wattage:
+            istWattage = int(self.powerReadings["power_limit"]["$"].split(".")[0])
+            if istWattage == wattage:
                 self.log.Info("power level set to %s W" % wattage)
                 return True
             else:
-                self.log.Warning("could not set wattage. Command executed but: SOLL: %s vs. IST: %s" % (wattage, self.powerReadings["power_limit"]["$"].split(".")[0]))
+                self.log.Warning("could not set wattage. Command executed but: SOLL: \"%i\" vs. IST: \"%i\"" % (wattage, istWattage))
                 return False
         self.log.Error("could not set wattage. Command execution failed")
         return False
