@@ -298,7 +298,7 @@ class GPU:
             # print(command)
             data = self.NSMI(command)
             if data == None:
-                raise Exception("cannot get GPU#%i data" % id)
+                raise Exception("cannot get GPU#%i data" % self.id)
 
             gpu = data["nvidia_smi_log"]["gpu"]
 
