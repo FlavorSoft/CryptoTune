@@ -159,7 +159,6 @@ class Controller:
             coreUCs += str(self.gpus[i].coreUC) + " "
 
         # start MiningSoftware with gatheres settings
-        print("START IT!")
         self.ms.Start(memOCs, coreUCs)
 
         # wait for the first API request to answer correctly
