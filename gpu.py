@@ -374,14 +374,14 @@ class GPU:
 
     def NSMISet(self, name, value):
         command = "nvidia-smi -i %i -%s %s" % (self.id, name, value)
-        self.log.Debug("SMI Command: %s" % command)
+        self.log.Debug("GPU%i: SMI Command: %s" % (self.id, command))
         process = Popen(command.split(" "), stdout=PIPE)
         (output, err) = process.communicate()
         exit_code = process.wait()
         if exit_code == 0:
             return True
         else:
-            self.log.Warning("could not execute nvidia-smi command: \"%s\"" % command)
+            self.log.Warning("GPU%i: could not execute nvidia-smi command: \"%s\"" % (self.id, command))
             #print("Code: %i:\n%s" %(exit_code, err))
             return False
 
@@ -392,12 +392,12 @@ class GPU:
             self.GetData()
             istWattage = int(self.powerReadings["power_limit"]["$"].split(".")[0])
             if istWattage == wattage:
-                self.log.Info("power level set to %s W" % wattage)
+                self.log.Info("GPU%i: power level set to %s W" % (self.id, wattage))
                 return True
             else:
-                self.log.Warning("could not set wattage. Command executed but: SOLL: \"%i\" vs. IST: \"%i\"" % (wattage, istWattage))
+                self.log.Warning("GPU%i: could not set wattage. Command executed but: SOLL: \"%i\" vs. IST: \"%i\"" % (self.id, wattage, istWattage))
                 return False
-        self.log.Error("could not set wattage. Command execution failed")
+        self.log.Error("GPU%i: could not set wattage. Command execution failed" % self.id)
         return False
 
     def SetMinPowerLevel(self):

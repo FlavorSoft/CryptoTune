@@ -25,7 +25,6 @@ class StartMiner:
                 mFolder = os.path.join(minerFolder, folder)
                 self.GetConfig(mFolder)
                 self.exePath = self.GetExePath(mFolder)
-                #self.Start("%s\\%s" % (minerFolder, folder), workerName, devIds, fans, memOCs, coreUCs)
 
     def ArrToParam(self, arr):
         res = ""
@@ -80,7 +79,10 @@ class StartMiner:
         
 
     def Stop(self):
-        subprocess.call(['taskkill', '/F', '/T', '/PID',  str(self.proc.pid)])
+        if self.isWindows:
+            subprocess.call(['taskkill', '/F', '/T', '/PID',  str(self.proc.pid)])
+        else:
+            subprocess.call(["kill", "-9", str(self.proc.pid)])
         self.isRunning = False
 
     def GetMinerChildProcessID(self):
