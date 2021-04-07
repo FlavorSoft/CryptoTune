@@ -350,7 +350,7 @@ class GPU:
             self.log.Error("invalid value for change in nvidia-settings")
             return False
 
-        process = Popen([command.split(" "), stdout=PIPE)
+        process = Popen(command.split(" "), stdout=PIPE)
         (output, err) = process.communicate()
         exit_code = process.wait()
         if exit_code == 0:
