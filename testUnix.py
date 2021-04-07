@@ -3,3 +3,4 @@ from log import Log
 log = Log("DEBUG")
 
 ms = StartMiner(log, "UnixWorker", "gminer", [0], [70])
+print(ms.GetSubProcessIDs(10))

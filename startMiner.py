@@ -89,6 +89,7 @@ class StartMiner:
             self.subChilds.append(self.GetSubProcessIDs(str(child)))
             self.log.Debug("subchild: %s" % subchild)
 
+
     def ProcessesChanged(self):
         childs = self.GetSubProcessIDs(self.proc.pid)
         if len(childs) != len(self.directChilds):
@@ -125,13 +126,25 @@ class StartMiner:
                         res.append(arr[0])
             return res
         else:
-            self.log.Warning("could not get subprocesses: \"%s\"" % command)
+            self.log.Error("could not get subprocesses: \"%s\"" % command)
             self.log.Debug("Code: %i:\n%s" %(exit_code, err))
             return None
 
     def GetSubProcessIDsUnix(self, pid):
-        self.log.Error("can't get child processes, not yet implemented")
-        return None
+        res = []
+        command = "ps -o pid --ppid %d --noheaders" % pid
+        process = Popen(command, shell=True, stdout=subprocess.PIPE)
+        (output, err) = process.communicate()
+        exit_code = process.wait()
+        if exit_code == 0:
+            lines = output.decode("utf-8").replace(" ", "").split("\n")
+            for pid_str in lines[:-1]:
+                res.append(int(pid_str))
+            return res
+        else:
+            self.log.Error("could not get subprocesses: \"%s\"" % command)
+            self.log.Debug("Code: %i:\n%s" %(exit_code, err))
+            return None
 
     def GetSubProcessIDs(self, pid):
         if self.IsWindowsOS():
