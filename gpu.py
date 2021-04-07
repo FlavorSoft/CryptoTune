@@ -37,6 +37,9 @@ class GPU:
         self.nbrOfShares = nbrOfShares
         self.maxAvgSpeed = 0
 
+        # if this is a unix environment, we need to setup fans and clocks now
+        if not self.isWindows:
+            self.unixInit()
 
         if nbrOfDatapoints is None:
             nbrOfDatapoints = 10
@@ -51,6 +54,11 @@ class GPU:
         self.GetData()
         if self.powerLimit == None and self.found:
             self.SetPowerLevel(int(self.powerReadings["default_power_limit"]["$"].split(".")[0]))
+
+    def unixInit(self):
+        self.NVidiaSettings("fan", self.fanSpeed)
+        self.NVidiaSettings("memOC", self.memOC)
+        self.NVidiaSettings("coreUC", self.coreUC)
 
     def MiningSoftwareCrashed(self):
         # if the mining software crashed, the memory OC was too high
@@ -67,11 +75,15 @@ class GPU:
     def changeMemOC(self, val):
         self.requiresRestart = True
         self.memOC += val
+        if not self.isWindows:
+            self.NVidiaSettings("memOC", self.memOC)
 
     # change core underclock
     def changeCoreUC(self, val):
         self.requiresRestart = True
         self.coreUC += val
+        if not self.isWindows:
+            self.NVidiaSettings("coreUC", self.coreUC)
 
     # change power limit
     def changePowerLimit(self, val):
@@ -324,6 +336,29 @@ class GPU:
         except Exception as e:
             self.log.Warning("GPU could not be found or data is missing via nvidia-smi")
             self.log.Warning(str(e))
+
+    def NVidiaSettings(self,name, value):
+        command = None
+        if name == "fan":
+            command = "nvidia-settings -a '[gpu:%i]/GPUFanControlState=1' -a '[fan:0]/GPUTargetFanSpeed=%i'" % (self.id, value)
+        if name == "memOC":
+            command = "nvidia-settings -a '[gpu:%i]/GPUMemoryTransferRateOffset[3]=%i'" % (self.id, value)
+        if name == "coreUC":
+            command = "nvidia-settings -a '[gpu:%i]/GPUGraphicsClockOffset[2]=%i'" % (self.id, value)
+        
+        if name == None:
+            self.log.Error("invalid value for change in nvidia-settings")
+            return False
+
+        process = Popen([command.split(" "), stdout=PIPE)
+        (output, err) = process.communicate()
+        exit_code = process.wait()
+        if exit_code == 0:
+            return True
+        else:
+            self.warning("could not change nvidia-settings")
+            self.warning("Code: %i:\n%s" %(exit_code, output))
+            return False
 
     def NSMI(self, command):
         process = Popen(command.split(" "), stdout=PIPE)

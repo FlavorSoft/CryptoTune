@@ -15,7 +15,7 @@ class StartMiner:
         self.fans = self.ArrToParam(fans)
         self.isRunning = False
         self.exePath = None
-        self.windowsOS = self.IsWindowsOS()
+        self.isWindows = self.IsWindowsOS()
 
         curr = pathlib.Path(__file__).parent.absolute()
         minerFolder = os.path.join(curr, "miners")
@@ -40,7 +40,7 @@ class StartMiner:
             return False
 
     def GetExePath(self, folder):
-        if self.windowsOS:
+        if self.isWindows:
             return "%s\\miner.exe" % folder
         return "%s/miner" % folder
 
@@ -60,6 +60,9 @@ class StartMiner:
         
         #print (configPath)
         parameters = self.config["parameters"].replace("#core#", str(coreUCs)).replace("#mem#", str(memOCs)).replace("#fan#", str(self.fans)).replace("#dev#", str(self.devIds)).replace("#worker#", self.workerName)
+        if not self.isWindows:
+            parameters = self.config["parametersUnix"].replace("#core#", str(coreUCs)).replace("#mem#", str(memOCs)).replace("#fan#", str(self.fans)).replace("#dev#", str(self.devIds)).replace("#worker#", self.workerName)
+        
         self.StartProcess(parameters)
         self.log.Debug(parameters)
         self.log.Debug("will start miner %s" % self.exePath)
@@ -69,7 +72,7 @@ class StartMiner:
         self.isRunning = True
 
     def StartProcess(self, parameters):
-        if self.windowsOS:
+        if self.isWindows:
             cmd = "powershell"
             self.proc = subprocess.Popen([cmd, self.exePath, parameters], creationflags = subprocess.CREATE_NEW_CONSOLE)
         else:

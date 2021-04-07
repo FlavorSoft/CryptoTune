@@ -39,6 +39,7 @@ Following requirements need to be met in order for the tool to work properly
 - [Python 3.6 or higher installed](https://www.python.org/downloads/)
 - executing script with Administrative Access (open CMD with admin privileges or right-click "start.bat" -> run as admin)
 - installed packages from requirements.txt, can be done via **"pip install -r requirements.txt"**
+- close MSI Afterburner (if running)
 
 ## Usage
 The tool can be run as-is via the command: **"python run.py"**, it will pick default values for tuning which might not be perfect - but will work. In order to change clocks, **it is required to run the executing command line or batch-script with admin privileges (see warning above!).**
