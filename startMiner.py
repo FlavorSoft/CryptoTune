@@ -75,7 +75,9 @@ class StartMiner:
             cmd = "powershell"
             self.proc = subprocess.Popen([cmd, self.exePath, parameters], creationflags = subprocess.CREATE_NEW_CONSOLE)
         else:
-            self.proc = subprocess.Popen(["/bin/bash", "-c" ,self.exePath + " " + parameters], shell=True)
+            command = "sudo " + self.exePath + " " + parameters
+            self.log.Debug("Command: %s" % command)
+            self.proc = subprocess.Popen(command.split(" "), shell=True)
         
 
     def Stop(self):
