@@ -75,6 +75,8 @@ class GPU:
     def changeMemOC(self, val):
         if self.isWindows:
             self.requiresRestart = True
+        else:
+            self.ResetData(True, False)
         self.memOC += val
         if not self.isWindows:
             self.NVidiaSettings("memOC", self.memOC)
@@ -83,6 +85,9 @@ class GPU:
     def changeCoreUC(self, val):
         if self.isWindows:
             self.requiresRestart = True
+        else:
+            self.ResetData(True, False)
+        
         self.coreUC += val
         if not self.isWindows:
             self.NVidiaSettings("coreUC", self.coreUC)
