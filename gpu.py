@@ -14,6 +14,7 @@ class GPU:
         self.fanSpeed = fanSpeed
         self.isWindows = self.IsWindowsOS()
         self.lastShareCount = 0
+        self.minerData = None
 
         # speed data via mining software
         self.currentSpeedData = []
@@ -118,6 +119,7 @@ class GPU:
         
         # save data as it is valid
         self.AddSpeedData(minerData.speed)
+        self.minerData = minerData
 
         # check if enough data has been created
         if not self.IsSufficientData(minerData):
@@ -235,7 +237,7 @@ class GPU:
             self.lastData = self.currentData
             self.lastSpeedData = self.currentSpeedData
             self.SaveMaxAvgSpeed()
-            self.lastShareCount = self.currentData[len(self.currentData)-1]["accepted"]
+            self.lastShareCount = self.minerData.accepted
         self.currentData = []
         self.currentSpeedData = []
         self.requiresRestart = False
