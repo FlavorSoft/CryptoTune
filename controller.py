@@ -29,7 +29,6 @@ class Controller:
 
         # save base hw settings
         self.devIds = devIds
-        self.fanSpeeds = fanSpeeds
 
         # if no devices were specified, take all
         if devIds == None:
@@ -47,8 +46,8 @@ class Controller:
             if len(coreUCs) <= i:
                 coreUCs.append(0)
             if len(fanSpeeds) <= i and i > 0:
-                self.fanSpeeds.append(70)
-            gpu = GPU(self.log, i, mode, memOCs[i], coreUCs[i], fanSpeeds, steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH)
+                fanSpeeds.append(70)
+            gpu = GPU(self.log, i, mode, memOCs[i], coreUCs[i], fanSpeeds[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH)
             if gpu.found:
                 ids.append(i)
                 self.gpus.append(gpu)
