@@ -13,6 +13,7 @@ class GPU:
         self.mode = mode
         self.fanSpeed = fanSpeed
         self.isWindows = self.IsWindowsOS()
+        self.lastShareCount = 0
 
         # speed data via mining software
         self.currentSpeedData = []
@@ -167,8 +168,8 @@ class GPU:
 
     # check if gpu created enough valid share
     def IsSufficientData(self, minerData):
-        if minerData.accepted < self.nbrOfShares or len(self.currentData) < self.nbrOfDatapoints:
-            self.log.Debug("GPU%i: not created enough valid shares or datapoints yet shares (%i/%i) - datapoints (%i/%i)" % (self.id, minerData.accepted, self.nbrOfShares, len(self.currentData), self.nbrOfDatapoints))
+        if minerData.accepted - self.lastShareCount < self.nbrOfShares or len(self.currentData) < self.nbrOfDatapoints:
+            self.log.Debug("GPU%i: not created enough valid shares or datapoints yet shares (%i/%i) - datapoints (%i/%i)" % (self.id, minerData.accepted - self.lastShareCount, self.nbrOfShares, len(self.currentData), self.nbrOfDatapoints))
             return False
         return True
 
@@ -234,6 +235,7 @@ class GPU:
             self.lastData = self.currentData
             self.lastSpeedData = self.currentSpeedData
             self.SaveMaxAvgSpeed()
+            self.lastShareCount = self.currentData[len(self.currentData)-1].accepted
         self.currentData = []
         self.currentSpeedData = []
         self.requiresRestart = False
