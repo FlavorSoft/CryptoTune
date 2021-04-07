@@ -235,7 +235,7 @@ class GPU:
             self.lastData = self.currentData
             self.lastSpeedData = self.currentSpeedData
             self.SaveMaxAvgSpeed()
-            self.lastShareCount = self.currentData[len(self.currentData)-1].accepted
+            self.lastShareCount = self.currentData[len(self.currentData)-1]["accepted"]
         self.currentData = []
         self.currentSpeedData = []
         self.requiresRestart = False
