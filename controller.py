@@ -3,6 +3,7 @@ from startMiner import StartMiner
 from gpu import GPU
 import json, time, math, socket, hashlib
 from log import Log
+import platform, subprocess
 
 miningSoftwareCooldown = 1
 maxWaitForMiningSoftwareApi = 3
@@ -18,6 +19,10 @@ class Controller:
 
         # initialize logging utils
         self.log = Log("DEBUG")
+
+        # prepare unix systems
+        if platform.system() != "Windows":
+            subprocess.call(['./prepareUnix.sh'])
 
         # utility
         if mode < 0 or mode > 1:
