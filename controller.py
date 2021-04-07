@@ -43,7 +43,7 @@ class Controller:
         # collect all GPUs connected and initialize
         self.gpus = []
         ids = []
-        for i in devIds:
+        for i in range(len(devIds)):
             # set default values if no enough values were specified
             if len(powerLimits) <= i:
                 powerLimits.append(None)
@@ -53,7 +53,7 @@ class Controller:
                 coreUCs.append(0)
             if len(fanSpeeds) <= i:
                 fanSpeeds.append(70)
-            gpu = GPU(self.log, i, mode, memOCs[i], coreUCs[i], fanSpeeds[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH)
+            gpu = GPU(self.log, devIds[i], mode, memOCs[i], coreUCs[i], fanSpeeds[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH)
             if gpu.found:
                 ids.append(i)
                 self.gpus.append(gpu)
