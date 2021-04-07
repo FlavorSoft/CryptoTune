@@ -69,7 +69,7 @@ class StartMiner:
         self.isRunning = True
 
     def StartProcess(self, parameters):
-        if self.IsWindowsOS:
+        if self.windowsOS:
             cmd = "powershell"
             self.proc = subprocess.Popen([cmd, self.exePath, parameters], creationflags = subprocess.CREATE_NEW_CONSOLE)
         else:
