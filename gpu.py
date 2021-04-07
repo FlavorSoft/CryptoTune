@@ -340,11 +340,11 @@ class GPU:
     def NVidiaSettings(self,name, value):
         command = None
         if name == "fan":
-            command = "nvidia-settings -a '[gpu:%i]/GPUFanControlState=1' -a '[fan:0]/GPUTargetFanSpeed=%i'" % (self.id, value)
+            command = "nvidia-settings -a '[gpu:%i]/GPUFanControlState=1' -a [fan:0]/GPUTargetFanSpeed=%i" % (self.id, value)
         if name == "memOC":
-            command = "nvidia-settings -a '[gpu:%i]/GPUMemoryTransferRateOffset[3]=%i'" % (self.id, value)
+            command = "nvidia-settings -a [gpu:%i]/GPUMemoryTransferRateOffset[3]=%i" % (self.id, value)
         if name == "coreUC":
-            command = "nvidia-settings -a '[gpu:%i]/GPUGraphicsClockOffset[2]=%i'" % (self.id, value)
+            command = "nvidia-settings -a [gpu:%i]/GPUGraphicsClockOffset[2]=%i" % (self.id, value)
         
         if name == None:
             self.log.Error("invalid value for change in nvidia-settings")
