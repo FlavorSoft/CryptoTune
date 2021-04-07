@@ -133,7 +133,7 @@ class StartMiner:
 
     def GetSubProcessIDsUnix(self, pid):
         res = []
-        command = "ps -o pid --ppid %d --noheaders" % pid
+        command = "ps -o pid --ppid %s --noheaders" % pid
         process = Popen(command, shell=True, stdout=subprocess.PIPE)
         (output, err) = process.communicate()
         exit_code = process.wait()
