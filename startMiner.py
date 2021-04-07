@@ -67,8 +67,10 @@ class StartMiner:
         self.log.Debug("will start miner %s" % self.exePath)
         self.log.Debug("started miner with pid: %i" % self.proc.pid)
         time.sleep(5)
-        self.GetMinerChildProcessID()
-        self.isRunning = True
+        if not self.GetMinerChildProcessID():
+            self.isRunning = False
+            self.log.Debug("no child processes found - does not seem to run - exiting")
+            exit(3)
 
     def StartProcess(self, parameters):
         if self.isWindows:
@@ -89,12 +91,15 @@ class StartMiner:
 
     def GetMinerChildProcessID(self):
         self.directChilds = self.GetSubProcessIDs(self.proc.pid)
+        if self.directChilds == None:
+            return False
         self.log.Debug("directChilds: %s" % self.directChilds)
         self.subChilds = []
         for child in self.directChilds:
             subchild = self.GetSubProcessIDs(str(child))
             self.subChilds.append(self.GetSubProcessIDs(str(child)))
             self.log.Debug("subchild: %s" % subchild)
+        return True
 
 
     def ProcessesChanged(self):
