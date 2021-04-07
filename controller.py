@@ -45,7 +45,7 @@ class Controller:
                 memOCs.append(0)
             if len(coreUCs) <= i:
                 coreUCs.append(0)
-            if len(fanSpeeds) <= i and i > 0:
+            if len(fanSpeeds) <= i:
                 fanSpeeds.append(70)
             gpu = GPU(self.log, i, mode, memOCs[i], coreUCs[i], fanSpeeds[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH)
             if gpu.found:
