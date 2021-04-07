@@ -80,7 +80,7 @@ class StartMiner:
             subprocess.call(["chmod", "a+x", self.exePath])
             command = self.exePath + " " + parameters
             self.log.Debug("Command: %s" % command)
-            self.proc = subprocess.Popen(command.split(" "))
+            self.proc = subprocess.Popen(command, shell=True)
         
 
     def Stop(self):
