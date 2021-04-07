@@ -7,7 +7,7 @@ from controller import Controller
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"h:t:d:f:s:x:y:o:c:m:p",["mode=", "devices=", "fans=", "steps=", "shares=", "datapoints=", "offset=", "coreUC=", "memOC=", "powerLimit="])
+        opts, args = getopt.getopt(argv,"h:t:d:f:s:x:y:o:c:m:p:e:i",["mode=", "devices=", "fans=", "steps=", "shares=", "datapoints=", "offset=", "coreUC=", "memOC=", "powerLimit=", "powerCost=", "dollarPerMHash="])
     except getopt.GetoptError:
         print('run.py --mode <0 (efficiency) / 1 (speed)> --devices <0,1..nbr of GPUs> --fans <speed for each GPU> --steps <stepsize for OC> --shares <nbr of shares for validation> --datapoints <nbr of Datapoints for validation> --offset <for comparing speeds> --coreUC <core underclock values> --memOC <memory overclock values> --powerLimit <power limits>')
         sys.exit(2)
@@ -23,6 +23,9 @@ def main(argv):
     coreUCs = []
     memOCs = []
     powerLimits = []
+    dollarPerMHash = None
+    powerCost = None
+    profitability = None
 
     for opt, arg in opts:
         print("opt: %s arg: %s" % (opt,arg))
@@ -64,9 +67,21 @@ def main(argv):
             powerLimits = []
             for item in arr:
                 powerLimits.append(int(item))
+        elif opt in ("-e", "--powerCost"):
+            powerCost = float(arg)
+        elif opt in ("-i", "--dollarPerMHash"):
+            dollarPerMHash = float(arg)
+
+    if mode == 2 and (dollarPerMHash == None or powerCost == None):
+        mode = 0
+        print("mode 2 can only be applied if \"--powerCost\" and \"--dollarPerMHash\" args are given, falling back to mode 0")
+    else:
+        profitability = {}
+        profitability["powerCost"] = powerCost
+        profitability["dollarPerMHash"] = dollarPerMHash
 
     #   miner "gminer", devIds [0] fan 70, steps 10, shareCount 10, nbrOfDatapoints 10, marginInMH 0.25, coreUC 50, memOC 1200, powerLimit 270
-    Controller("gminer", mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, margin, coreUCs, memOCs, powerLimits)
+    Controller("gminer", mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, margin, coreUCs, memOCs, powerLimits, profitability)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

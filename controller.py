@@ -10,7 +10,7 @@ maxWaitForMiningSoftwareApi = 3
 sleepBetweenTuningRuns = 1
 
 class Controller:
-    def __init__(self, miner, mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, marginInMH, coreUCs, memOCs, powerLimits):
+    def __init__(self, miner, mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, marginInMH, coreUCs, memOCs, powerLimits, profitability):
    
         # give the worker a name to separate data on pool
         self.workerName = socket.gethostname().replace("-","").replace(".","").replace("_","")
@@ -26,12 +26,14 @@ class Controller:
             subprocess.call(["./prepareUnix.sh"])
 
         # utility
-        if mode < 0 or mode > 1:
+        if mode < 0 or mode > 2:
             self.log.Warning("invalid optimization mode \"%i\" - will default to best efficiency" % mode)
             mode = 0
-        self.modeText = "MOST EFFICIENCY"
+        self.modeText = "BEST EFFICIENCY"
         if mode == 1:
             self.modeText = "BEST SPEED"
+        if mode == 2:
+            self.modeText = "BEST PROFITABILITY"
 
         # save base hw settings
         self.devIds = devIds
@@ -53,7 +55,7 @@ class Controller:
                 coreUCs.append(0)
             if len(fanSpeeds) <= i:
                 fanSpeeds.append(70)
-            gpu = GPU(self.log, devIds[i], mode, memOCs[i], coreUCs[i], fanSpeeds[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH)
+            gpu = GPU(self.log, devIds[i], mode, memOCs[i], coreUCs[i], fanSpeeds[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH, profitability)
             if gpu.found:
                 ids.append(devIds[i])
                 self.gpus.append(gpu)

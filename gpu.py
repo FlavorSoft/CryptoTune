@@ -6,7 +6,8 @@ from lxml.etree import fromstring, tostring
 wattSteps = 2
 
 class GPU:
-    def __init__(self, log, id, mode, memOC, coreUC, fanSpeed, steps, powerLimit, nbrOfShares, nbrOfDatapoints, marginInMH):
+    def __init__(self, log, id, mode, memOC, coreUC, fanSpeed, steps, powerLimit, nbrOfShares, nbrOfDatapoints, marginInMH, profitability):
+        
         self.log = log
         self.id = id
         self.found = False
@@ -38,6 +39,12 @@ class GPU:
         self.powerLimit = powerLimit
         self.nbrOfShares = nbrOfShares
         self.maxAvgSpeed = 0
+
+        if mode == 2 and profitability == None:
+            self.log.Error("Mode 2 was selected but no profitability calculation would be possible")
+            exit(2)
+
+        self.profitability = profitability
 
         # if this is a unix environment, we need to setup fans and clocks now
         if not self.isWindows:
@@ -170,6 +177,8 @@ class GPU:
 
     # check if gpu created enough valid share
     def IsSufficientData(self, minerData):
+        if minerData.accepted == 0:
+            self.lastShareCount = 0
         if minerData.accepted - self.lastShareCount < self.nbrOfShares or len(self.currentData) < self.nbrOfDatapoints:
             self.log.Debug("GPU%i: not created enough valid shares or datapoints yet shares (%i/%i) - datapoints (%i/%i)" % (self.id, minerData.accepted - self.lastShareCount, self.nbrOfShares, len(self.currentData), self.nbrOfDatapoints))
             return False
@@ -224,6 +233,50 @@ class GPU:
                 self.changePowerLimit(-1 * wattSteps)
                 self.log.Info("GPU%i: reduced power limit to %i" % (self.id, self.powerLimit))
                 return
+
+        # profitability mode
+        if self.mode == 2:
+            moreProfitable = self.IsMoreProfitable()
+            if not moreProfitable:
+                self.changePowerLimit(wattSteps)
+                self.minPowerLimitFound = True
+                self.log.Info("GPU%i: previous power limit was more profitable, found minimum power level: %i" % (self.id, self.powerLimit))
+                return
+
+            # otherwise, we are now more profitable -> better -> reduce power limit
+            self.changePowerLimit(-1 * wattSteps)
+            self.log.Info("GPU%i: reduced power limit to %i" % (self.id, self.powerLimit))
+            return
+            
+
+    def IsMoreProfitable(self):
+        if len(self.lastData) == 0 or len(self.lastSpeedData) == 0:
+            return True
+
+        old = self.NetProfitPerDay(self.lastSpeedData, self.lastData)
+        new = self.NetProfitPerDay(self.currentSpeedData, self.currentData)
+        print("old vs. new: %.2f vs. %.2f" % (old, new))
+        if new > old:
+            return True
+        return False
+
+    def NetProfitPerDay(self, speedData, data):
+        startingPoint = len(data) - len(speedData)
+        print("len: %i - starting point of array %i" % (len(data), startingPoint))
+        netProfit = self.GrossProfitPerDay(speedData) - self.ElectricityCostPerDay(data[startingPoint:])
+        self.log.Debug("GPU%i: NetProfit: %.2f" % (self.id, netProfit))
+        return netProfit
+
+    def GrossProfitPerDay(self, speedData):
+        grossProfit = self.GetAvgSpeed(speedData) * self.profitability["dollarPerMHash"]
+        print("GrossProfit: %.2f" % grossProfit)
+        return grossProfit
+
+    def ElectricityCostPerDay(self, data):
+        electricityCost = self.GetAveragePowerDraw(data) / 1000 * 24.0 * self.profitability["powerCost"]
+        print("avgPowerDraw: %.2f" % self.GetAveragePowerDraw(data))
+        print("powerCost: %.2f" % electricityCost)
+        return electricityCost
 
     def AddSpeedData(self, speed):
         if speed > 0:
@@ -293,7 +346,7 @@ class GPU:
         sum = 0.0
         for item in lst:
             sum += item / 1000000
-        #print("avg speed: %f" % (sum / len(lst)))
+        print("avg speed: %f" % (sum / len(lst)))
         return sum / len(lst)
 
     def GetAveragePowerDraw(self, lst):
