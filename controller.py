@@ -61,6 +61,7 @@ class Controller:
                 self.gpus[i].SetPowerLevel(powerLimits[i])
                 self.log.Info("found GPU%i - %s" % (i, self.gpus[i].name))
             else:
+                fanSpeeds.remove(fanSpeeds[len(fanSpeeds) - 1])
                 self.log.Warning("could not find GPU%i - will work with the found onces" % i)
                 break
 
