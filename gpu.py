@@ -6,12 +6,12 @@ from lxml.etree import fromstring, tostring
 wattSteps = 2
 
 class GPU:
-    def __init__(self, log, id, mode, memOC, coreUC, steps, powerLimit, nbrOfShares, nbrOfDatapoints, marginInMH):
+    def __init__(self, log, id, mode, memOC, coreUC, fanSpeed, steps, powerLimit, nbrOfShares, nbrOfDatapoints, marginInMH):
         self.log = log
         self.id = id
         self.found = False
         self.mode = mode
-
+        self.fanSpeed = fanSpeed
         self.isWindows = self.IsWindowsOS()
 
         # speed data via mining software
@@ -356,8 +356,8 @@ class GPU:
         if exit_code == 0:
             return True
         else:
-            self.warning("could not change nvidia-settings")
-            self.warning("Code: %i:\n%s" %(exit_code, output))
+            self.log.Warning("could not change nvidia-settings")
+            self.log.Warning("Code: %i:\n%s" %(exit_code, output))
             return False
 
     def NSMI(self, command):

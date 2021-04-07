@@ -46,11 +46,10 @@ class Controller:
                 memOCs.append(0)
             if len(coreUCs) <= i:
                 coreUCs.append(0)
-            gpu = GPU(self.log, i, mode, memOCs[i], coreUCs[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH)
+            if len(fanSpeeds) <= i and i > 0:
+                self.fanSpeeds.append(70)
+            gpu = GPU(self.log, i, mode, memOCs[i], coreUCs[i], fanSpeeds, steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH)
             if gpu.found:
-                
-                if len(fanSpeeds) <= i and i > 0:
-                    self.fanSpeeds.append(self.fanSpeeds[0])
                 ids.append(i)
                 self.gpus.append(gpu)
                 # set starting power level
