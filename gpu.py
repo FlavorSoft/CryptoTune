@@ -73,14 +73,16 @@ class GPU:
 
     # change memory overclock
     def changeMemOC(self, val):
-        self.requiresRestart = True
+        if self.isWindows:
+            self.requiresRestart = True
         self.memOC += val
         if not self.isWindows:
             self.NVidiaSettings("memOC", self.memOC)
 
     # change core underclock
     def changeCoreUC(self, val):
-        self.requiresRestart = True
+        if self.isWindows:
+            self.requiresRestart = True
         self.coreUC += val
         if not self.isWindows:
             self.NVidiaSettings("coreUC", self.coreUC)
