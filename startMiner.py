@@ -90,6 +90,8 @@ class StartMiner:
             subprocess.call(['taskkill', '/F', '/T', '/PID',  str(self.proc.pid)])
         else:
             subprocess.call(["kill", "-9", str(self.proc.pid)])
+            self.proc.kill()
+        time.sleep(3)
         self.isRunning = False
 
     def GetMinerChildProcessID(self):
