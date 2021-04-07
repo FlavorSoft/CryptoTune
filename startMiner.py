@@ -64,7 +64,7 @@ class StartMiner:
         self.log.Debug(parameters)
         self.log.Debug("will start miner %s" % self.exePath)
         self.log.Debug("started miner with pid: %i" % self.proc.pid)
-        time.sleep(1)
+        time.sleep(5)
         self.GetMinerChildProcessID()
         self.isRunning = True
 
