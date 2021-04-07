@@ -71,6 +71,8 @@ class StartMiner:
             self.isRunning = False
             self.log.Debug("no child processes found - does not seem to run - exiting")
             exit(3)
+        else:
+            self.isRunning = True
 
     def StartProcess(self, parameters):
         if self.isWindows:
