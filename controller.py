@@ -22,9 +22,9 @@ class Controller:
 
         # prepare unix systems
         if platform.system() != "Windows":
-            subprocess.call(["chmod", "a+x", "./prepareUnix.sh'])
+            subprocess.call(["chmod", "a+x", "./prepareUnix.sh"])
             subprocess.call(["./prepareUnix.sh"])
-            
+
         # utility
         if mode < 0 or mode > 1:
             self.log.Warning("invalid optimization mode \"%i\" - will default to best efficiency" % mode)
