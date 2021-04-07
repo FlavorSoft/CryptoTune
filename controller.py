@@ -55,7 +55,7 @@ class Controller:
                 fanSpeeds.append(70)
             gpu = GPU(self.log, devIds[i], mode, memOCs[i], coreUCs[i], fanSpeeds[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH)
             if gpu.found:
-                ids.append(i)
+                ids.append(devIds[i])
                 self.gpus.append(gpu)
                 # set starting power level
                 self.gpus[i].SetPowerLevel(powerLimits[i])
