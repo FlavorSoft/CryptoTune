@@ -10,7 +10,7 @@ This software does exactly what you would do manually to reach peak speeds/effic
 ## Features for automated GPU Overclocking & Power Limiting
 * Thermal Throttling detection
 * Automatic down-clocking on mining software crash or invalid shares
-* Three Optimation Modes: 
+* Three Optimization Modes: 
     * Efficiency: get the best Hash/Watt ratio
     * Speed: achieve the highest sense-making speed
     * Profitability: get the best profitability with your power costs
