@@ -149,7 +149,7 @@ class StartMiner:
 
     def GetSubProcessIDsUnix(self, pid):
         res = []
-        command = "ps -o pid --ppid %s --noheaders" % pid
+        command = "putt -o pid --ppid %s --noheaders" % pid
         process = Popen(command, shell=True, stdout=subprocess.PIPE)
         (output, err) = process.communicate()
         exit_code = process.wait()
@@ -176,6 +176,5 @@ class StartMiner:
         newRes = []
         for item in res:
             if item != "":
-                #print("adding item %s" % item.split(" ")[0])
                 newRes.append(item)
         return newRes

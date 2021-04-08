@@ -12,7 +12,7 @@ def main(argv):
         print('run.py --mode <0 (efficiency) / 1 (speed)> --devices <0,1..nbr of GPUs> --fans <speed for each GPU> --steps <stepsize for OC> --shares <nbr of shares for validation> --datapoints <nbr of Datapoints for validation> --offset <for comparing speeds> --coreUC <core underclock values> --memOC <memory overclock values> --powerLimit <power limits>')
         sys.exit(2)
 
-    # defaults for 1 GPU
+    # defaults for GPUs
     mode = 0
     devIds = None
     fanSpeeds = []
@@ -25,10 +25,8 @@ def main(argv):
     powerLimits = []
     dollarPerMHash = None
     powerCost = None
-    profitability = None
 
     for opt, arg in opts:
-        print("opt: %s arg: %s" % (opt,arg))
         if opt == '-h':
             print ('run.py --mode <0 (efficiency) / 1 (speed)> --devices <0,1..nbr of GPUs> --fans <speed for each GPU> --steps <stepsize for OC> --shares <nbr of shares for validation> --datapoints <nbr of Datapoints for validation> --offset <for comparing speeds> --coreUC <core underclock values> --memOC <memory overclock values> --powerLimit <power limits>')
             sys.exit()
@@ -75,13 +73,9 @@ def main(argv):
     if mode == 2 and (dollarPerMHash == None or powerCost == None):
         mode = 0
         print("mode 2 can only be applied if \"--powerCost\" and \"--dollarPerMHash\" args are given, falling back to mode 0")
-    else:
-        profitability = {}
-        profitability["powerCost"] = powerCost
-        profitability["dollarPerMHash"] = dollarPerMHash
 
     #   miner "gminer", devIds [0] fan 70, steps 10, shareCount 10, nbrOfDatapoints 10, marginInMH 0.25, coreUC 50, memOC 1200, powerLimit 270
-    Controller("gminer", mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, margin, coreUCs, memOCs, powerLimits, profitability)
+    Controller("gminer", mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, margin, coreUCs, memOCs, powerLimits, powerCost, dollarPerMHash)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

@@ -7,6 +7,18 @@ As this software needs to be run as admin, do not use it if you are not sure wha
 # What it does
 This software does exactly what you would do manually to reach peak speeds/efficiency on your GPUs - but in parallel and without the effort.
 
+## Features for automated GPU Overclocking & Power Limiting
+* Thermal Throttling detection
+* Automatic down-clocking on mining software crash or invalid shares
+* Three Optimation Modes: 
+    * Efficiency: get the best Hash/Watt ratio
+    * Speed: achieve the highest sense-making speed
+    * Profitability: get the best profitability with your power costs
+* Parallel Optimization of all GPUs at the same time
+
+### Thermal Throttling Detection
+If your GPUs are reducing their Hashrate due to high temps or too high overclocks, the tool will inform you and reduce the clocks accordingly.
+
 ### Finding maximum Memory OC
 The software will start overclocking your memory until either the mining software crashes or your GPU created invalid shares. This will help in reaching the maximum possible speed.
 
@@ -15,8 +27,9 @@ After finding the maximum possible memory clock, the software will start reducin
 
 ### Finding minimum Power Limits
 After clocks are fine tuned, each GPUs power limit will be reduced to lower temperatures and increase efficiency (lower power costs). There are two modes to choose from:
-Mode 1: Maximum Efficiency (default): your GPU will probably not reach it's top hash rate, but it will be the most efficient (power/hash) you can achieve
-Mode 2: Maximum Speed (hybrid): Your GPU will run some kHashes below it's maximum speed but can achieve this with a lot less power than default (see "margin"-parameter)
+Mode 0: Maximum Efficiency (default): your GPU will probably not reach it's top hash rate, but it will be the most efficient (power/hash) you can achieve
+Mode 1: Maximum Speed (hybrid): Your GPU will run some kHashes below it's maximum speed but can achieve this with a lot less power than default (see "margin"-parameter)
+Mode 2: Maximum Profitability: Enter your powerCost and "daily dollars per MHash" and get the best settings for achieving the highest profitability
 
 ### Tuning all GPUs in parallel
 This software tracks your GPUs state every second, creates statistics from that and automatically sets your GPUs to your preferred model. All GPUs are tuned at the same time, therefore it is fast and accurate in it's decision making without writing down hundreds of values, speeds and efficiencies manually.

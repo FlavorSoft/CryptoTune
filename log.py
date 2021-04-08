@@ -6,7 +6,7 @@ class Log:
     def __init__(self, level):
         subPath = "./logs"
         Path("./logs").mkdir(parents=True, exist_ok=True)
-        filename="%s/autotune_%s.log" % (subPath, strftime("%Y-%m- %H %M %S"))
+        filename="%s/autotune_%s.log" % (subPath, strftime("%Y-%m-%d_%H_%M_%S"))
         if level == "INFO":
             logging.basicConfig(filename=filename, level=logging.INFO)
         elif level == "WARNING":
@@ -16,22 +16,21 @@ class Log:
         else:
             logging.basicConfig(filename=filename, level=logging.DEBUG)
 
+    def GetMessage(self, msg):
+        return strftime("%Y-%m-%d %H:%M:%S") + " - " +  msg
+
     def Error(self, msg):
-        msg = strftime("%Y-%m- %H %M %S") + " " +  msg
-        logging.error(msg)
-        print("ERR:\t%s" % msg)
+        logging.error(self.GetMessage(msg))
+        print("ERR:\t%s" % self.GetMessage(msg))
     
     def Warning(self, msg):
-        msg = strftime("%Y-%m- %H %M %S") + " " +  msg
-        logging.warning(msg)
-        print("WARN:\t%s" % msg)
+        logging.warning(self.GetMessage(msg))
+        print("WARN:\t%s" % self.GetMessage(msg))
 
     def Info(self, msg):
-        msg = strftime("%Y-%m- %H %M %S") + " " + msg
-        logging.info(msg)
-        print("INFO:\t%s" % msg)
+        logging.info(self.GetMessage(msg))
+        print("INFO:\t%s" % self.GetMessage(msg))
 
     def Debug(self, msg):
-        msg = strftime("%Y-%m- %H %M %S") + " " + msg
-        logging.debug(msg)
-        print("DEBUG:\t%s" % msg)
+        logging.debug(self.GetMessage(msg))
+        print("DEBUG:\t%s" % self.GetMessage(msg))

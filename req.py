@@ -14,8 +14,6 @@ class MinerDataRequester:
         try:
             r = requests.get(self.path)
             if r.status_code == 200 and r is not None and r.json() is not None:
-                #print("response code: %i" % r.status_code)
-                #print(r.content)
                 return self.responseParser.Parse(r.json())
         except:
             return None

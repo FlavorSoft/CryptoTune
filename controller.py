@@ -10,7 +10,7 @@ maxWaitForMiningSoftwareApi = 3
 sleepBetweenTuningRuns = 1
 
 class Controller:
-    def __init__(self, miner, mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, marginInMH, coreUCs, memOCs, powerLimits, profitability):
+    def __init__(self, miner, mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, marginInMH, coreUCs, memOCs, powerLimits, powerCost, dollarPerMHash):
    
         # give the worker a name to separate data on pool
         self.workerName = socket.gethostname().replace("-","").replace(".","").replace("_","")
@@ -44,6 +44,7 @@ class Controller:
 
         # collect all GPUs connected and initialize
         self.gpus = []
+        self.overheatedGPUs = []
         ids = []
         for i in range(len(devIds)):
             # set default values if no enough values were specified
@@ -55,12 +56,12 @@ class Controller:
                 coreUCs.append(0)
             if len(fanSpeeds) <= i:
                 fanSpeeds.append(70)
-            gpu = GPU(self.log, devIds[i], mode, memOCs[i], coreUCs[i], fanSpeeds[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH, profitability)
+            gpu = GPU(self.log, devIds[i], mode, memOCs[i], coreUCs[i], fanSpeeds[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH, powerCost, dollarPerMHash)
             if gpu.found:
                 ids.append(devIds[i])
                 self.gpus.append(gpu)
                 # set starting power level
-                self.gpus[i].SetPowerLevel(powerLimits[i])
+                self.gpus[i].SetPowerLimit(powerLimits[i])
                 self.log.Info("found GPU%i - %s" % (i, self.gpus[i].name))
             else:
                 fanSpeeds.remove(fanSpeeds[len(fanSpeeds) - 1])
@@ -85,6 +86,7 @@ class Controller:
         tuningDone = 0
         self.requiresRestart = True
         saveOldData = False
+        self.ResetGPUs(False, False)
         while tuningDone < len(self.gpus):
             # test if running mining Software has crashed
             crashed = False
@@ -97,8 +99,10 @@ class Controller:
             if not self.ms.isRunning:
                 self.ReStartMiningSoftware()
 
-            elif (self.requiresRestart and self.GPUsFinishedTuning()) or crashed:
+            # if all GPUs are finished with tuning, or software crashed, restart
+            if (self.requiresRestart and self.GPUsFinishedTuning()) or crashed:
                 self.ResetGPUs(saveOldData, crashed)
+                self.RemoveOverheatingGPUs()
                 self.ReStartMiningSoftware()
 
             elif self.requiresRestart:
@@ -106,19 +110,38 @@ class Controller:
 
             saveOldData = True
             minerData = self.req.getData()
+            
+            # tune GPUs
             tuningDone = self.OC(minerData)
+
+            # wait some time between runs
             time.sleep(sleepBetweenTuningRuns)
 
         # as we are complete, print resultdata of each GPU
         self.log.Info("### TUNING COMPLETED FOR %i GPUS with Mode: \"%s\" ###" % (len(self.gpus), self.modeText))
         for gpu in self.gpus:
-            plPerc = math.ceil(100.0 / int(gpu.powerReadings["default_power_limit"]["$"].split(".")[0]) * gpu.powerLimit)
-            self.log.Info("GPU%i: Max Memory Overclock: %i\tMax Core UnderClock: %i\tMin Power Level: %iW (%i%%)" % (gpu.id, gpu.memOC, gpu.coreUC, gpu.powerLimit, plPerc))
+            plPerc = math.ceil(100.0 / gpu.defaultPowerLimit * gpu.powerLimit)
+            self.log.Info("GPU%i: Max Memory Overclock: %i\tMax Core UnderClock: %i\tMin Power Limit: %iW (%i%%)\tFan: %i%%" % (gpu.id, gpu.memOC, gpu.coreUC, gpu.powerLimit, plPerc, gpu.fanSpeed))
+        
+        for gpu in self.overheatedGPUs:
+            plPerc = math.ceil(100.0 / gpu.defaultPowerLimit * gpu.powerLimit)
+            self.log.Info("!OVERHEATED! GPU%i: Memory Overclock: %i\tCore UnderClock: %i\tPower Limit: %iW (%i%%)\tFan: %i%%" % (gpu.id, gpu.memOC, gpu.coreUC, gpu.powerLimit, plPerc, gpu.fanSpeed))
+
+        # stop mining if no GPU is left
+        if len(self.gpus) == 0:
+            self.ms.Stop()
+
+    def RemoveOverheatingGPUs(self):
+        for gpu in self.gpus:
+            if gpu.Overheating():
+                self.log.Warning("GPU%i is overheating - removing it from mining process for safety reasons" % gpu.id)
+                self.gpus.remove(gpu)
+                self.overheatedGPUs.append(gpu)
 
     def GPUsFinishedTuning(self):
         finishedTuning = True
         for gpu in self.gpus:
-            if not gpu.tuningRanThrough:
+            if not gpu.tuningDone:
                 finishedTuning = False
         return finishedTuning
 
