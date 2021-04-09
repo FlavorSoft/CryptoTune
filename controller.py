@@ -1,6 +1,7 @@
 from req import MinerDataRequester
 from startMiner import StartMiner
 from gpu import GPU
+import gpuSettingsLoader
 import json, time, math, socket, hashlib
 from log import Log
 import platform, subprocess
@@ -10,7 +11,7 @@ maxWaitForMiningSoftwareApi = 3
 sleepBetweenTuningRuns = 1
 
 class Controller:
-    def __init__(self, miner, mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, marginInMH, coreUCs, memOCs, powerLimits, powerCost, dollarPerMHash):
+    def __init__(self, miner, mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, marginInMH, coreUCs, memOCs, powerLimits, powerCost, dollarPerMHash, loadPreset):
    
         # give the worker a name to separate data on pool
         self.workerName = socket.gethostname().replace("-","").replace(".","").replace("_","")
@@ -56,8 +57,15 @@ class Controller:
                 coreUCs.append(0)
             if len(fanSpeeds) <= i:
                 fanSpeeds.append(70)
+                
             gpu = GPU(self.log, devIds[i], mode, memOCs[i], coreUCs[i], fanSpeeds[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH, powerCost, dollarPerMHash)
+
             if gpu.found:
+                # if preset for GPUs should be loaded, do this now
+                if loadPreset:
+                    # currently only ethash supported
+                    self.ApplyPreset(gpu, "ethash")
+
                 ids.append(devIds[i])
                 self.gpus.append(gpu)
                 # set starting power level
@@ -130,6 +138,14 @@ class Controller:
         # stop mining if no GPU is left
         if len(self.gpus) == 0:
             self.ms.Stop()
+
+    def ApplyPreset(self, gpu, algo):
+        settings = gpuSettingsLoader.GetSettings(gpu.name)
+        if settings is not None and settings[algo] is not None:
+            gpu.memOC = settings[algo]["memOC"]
+            gpu.coreUC = settings[algo]["coreUC"]
+            gpu.fanSpeed = settings[algo]["fan"]
+            gpu.powerLimit = settings[algo]["powerLimit"]
 
     def RemoveOverheatingGPUs(self):
         for gpu in self.gpus:

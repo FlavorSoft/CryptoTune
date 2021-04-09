@@ -7,7 +7,7 @@ from controller import Controller
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"h:t:d:f:s:x:y:o:c:m:p:e:i",["mode=", "devices=", "fans=", "steps=", "shares=", "datapoints=", "offset=", "coreUC=", "memOC=", "powerLimit=", "powerCost=", "dollarPerMHash="])
+        opts, args = getopt.getopt(argv,"h:t:d:f:s:x:y:o:c:m:p:e:i:w",["mode=", "devices=", "fans=", "steps=", "shares=", "datapoints=", "offset=", "coreUC=", "memOC=", "powerLimit=", "powerCost=", "dollarPerMHash=", "loadPreset"])
     except getopt.GetoptError:
         print('run.py --mode <0 (efficiency) / 1 (speed)> --devices <0,1..nbr of GPUs> --fans <speed for each GPU> --steps <stepsize for OC> --shares <nbr of shares for validation> --datapoints <nbr of Datapoints for validation> --offset <for comparing speeds> --coreUC <core underclock values> --memOC <memory overclock values> --powerLimit <power limits>')
         sys.exit(2)
@@ -25,10 +25,11 @@ def main(argv):
     powerLimits = []
     dollarPerMHash = None
     powerCost = None
+    loadPreset = False
 
     for opt, arg in opts:
         if opt == '-h':
-            print ('run.py --mode <0 (efficiency) / 1 (speed)> --devices <0,1..nbr of GPUs> --fans <speed for each GPU> --steps <stepsize for OC> --shares <nbr of shares for validation> --datapoints <nbr of Datapoints for validation> --offset <for comparing speeds> --coreUC <core underclock values> --memOC <memory overclock values> --powerLimit <power limits>')
+            print ('run.py --mode <0 (efficiency) / 1 (speed)> --devices <0,1..nbr of GPUs> --fans <speed for each GPU> --steps <stepsize for OC> --shares <nbr of shares for validation> --datapoints <nbr of Datapoints for validation> --offset <for comparing speeds> --coreUC <core underclock values> --memOC <memory overclock values> --powerLimit <power limits> --loadPreset')
             sys.exit()
         elif opt in ("-t", "--mode"):
             mode = int(arg)
@@ -69,13 +70,15 @@ def main(argv):
             powerCost = float(arg)
         elif opt in ("-i", "--dollarPerMHash"):
             dollarPerMHash = float(arg)
+        elif opt in ("-w", "--loadPreset"):
+            loadPreset = True
 
     if mode == 2 and (dollarPerMHash == None or powerCost == None):
         mode = 0
         print("mode 2 can only be applied if \"--powerCost\" and \"--dollarPerMHash\" args are given, falling back to mode 0")
 
     #   miner "gminer", devIds [0] fan 70, steps 10, shareCount 10, nbrOfDatapoints 10, marginInMH 0.25, coreUC 50, memOC 1200, powerLimit 270
-    Controller("gminer", mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, margin, coreUCs, memOCs, powerLimits, powerCost, dollarPerMHash)
+    Controller("gminer", mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, margin, coreUCs, memOCs, powerLimits, powerCost, dollarPerMHash, loadPreset)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
