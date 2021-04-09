@@ -1,8 +1,8 @@
 {
     "ethash": {
-        "memOC": 100,
-        "coreUC": 0,
-        "powerLimit": 160,
+        "memOC": 450,
+        "coreUC": 100,
+        "powerLimit": 135,
         "fan": 75
     },
     "comment": "OC Settings provided by https://www.reddit.com/user/Paddy32"

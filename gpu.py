@@ -1,4 +1,3 @@
-
 from subprocess import Popen, PIPE
 from nvidiaUtil import NVTool
 import xmljson, json, platform

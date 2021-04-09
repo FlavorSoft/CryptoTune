@@ -1,0 +1,9 @@
+{
+    "ethash": {
+        "memOC": 500,
+        "coreUC": 100,
+        "powerLimit": 145,
+        "fan": 75
+    },
+    "comment": "OC Settings provided by FlavorSoft"
+}

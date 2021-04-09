@@ -1,8 +1,10 @@
 # EtherTune
-Python script to automatically find optimized and stable GPU overclock settings to mine Ethereum
+Python script to automatically find optimized and stable GPU overclock settings to mine Ethereum.
+
 
 ## Warning
 As this software needs to be run as admin, do not use it if you are not sure what you are doing! The software will not try to steal your data in any way, but **i'm only some dude from the internet** so please do not trust me on that :)
+
 
 # What it does
 This software does exactly what you would do manually to reach peak speeds/efficiency on your GPUs - but in parallel and without the effort.

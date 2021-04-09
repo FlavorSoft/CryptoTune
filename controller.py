@@ -57,7 +57,7 @@ class Controller:
                 coreUCs.append(0)
             if len(fanSpeeds) <= i:
                 fanSpeeds.append(70)
-                
+
             gpu = GPU(self.log, devIds[i], mode, memOCs[i], coreUCs[i], fanSpeeds[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH, powerCost, dollarPerMHash)
 
             if gpu.found:
@@ -142,6 +142,7 @@ class Controller:
     def ApplyPreset(self, gpu, algo):
         settings = gpuSettingsLoader.GetSettings(gpu.name)
         if settings is not None and settings[algo] is not None:
+            self.log.Info("Loaded Preset for GPU%i %s" % (gpu.id, gpu.name))
             gpu.memOC = settings[algo]["memOC"]
             gpu.coreUC = settings[algo]["coreUC"]
             gpu.fanSpeed = settings[algo]["fan"]
