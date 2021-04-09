@@ -75,5 +75,7 @@ See file **"start.bat"** for a list of available parameters or see below list:
 ## Contribution / Donation
 By default, running the tool will mine some shares to my wallet address which can be easily changed with a text-editor but leaving it in would be much appreciated.
 If you want to pursue a more direct approach, you a free to use below crypto addresses hosted on Coinbase (no fees if send from there)
-* Ethereum: 0x1f84dEb2245A5686ac052079Ee5979f237660DD3 \n![Ethereum Wallet QR-Code](https://github.com/FlavorSoft/EtherTune/blob/424de8790be9b1068cf67104d27e16efab4d63f1/img/ethereum-wallet.png)
-* Bitcoin: 3EFokQmSeZbU8yUBVwfGnWqkbHgwX5pCVq  \n![Bitcoin Wallet QR-Code](https://github.com/FlavorSoft/EtherTune/blob/424de8790be9b1068cf67104d27e16efab4d63f1/img/bitcoin-wallet.png)
+#### Ethereum: 0x1f84dEb2245A5686ac052079Ee5979f237660DD3 ####
+![Ethereum Wallet QR-Code](https://github.com/FlavorSoft/EtherTune/blob/424de8790be9b1068cf67104d27e16efab4d63f1/img/ethereum-wallet.png)
+#### Bitcoin: 3EFokQmSeZbU8yUBVwfGnWqkbHgwX5pCVq #### 
+![Bitcoin Wallet QR-Code](https://github.com/FlavorSoft/EtherTune/blob/424de8790be9b1068cf67104d27e16efab4d63f1/img/bitcoin-wallet.png)
