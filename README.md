@@ -58,8 +58,9 @@ Following requirements need to be met in order for the tool to work properly
 ## Usage
 The tool can be run as-is via the command: **"python run.py"**, it will pick default values for tuning which might not be perfect - but will work. In order to change clocks, **it is required to run the executing command line or batch-script with admin privileges (see warning above!).**
 ```
-run.py --mode <0 (efficiency) / 1 (speed)> --devices <0,1..nbr of GPUs> --fans <speed for each GPU> --steps <stepsize for OC> --shares <nbr of shares for validation> --datapoints <nbr of Datapoints for validation> --offset <for comparing speeds> --coreUC <core underclock values> --memOC <memory overclock values> --powerLimit <power limits>
+run.py --mode 2 --devices 0,1,2,3 --fans 70,70,70,70 --steps 5 --shares 3 --datapoints 30 --offset 0.35 --coreUC -200 --memOC 500 --powerLimit 235 --powerCost 0.36 --dollarPerMHash 0.0966
 ```
+
 See file **"start.bat"** for a list of available parameters or see below list:
 * --mode <-t>: Defines which optimization mode for power limit should be applied, "--mode 0" (Efficiency) "--mode 1 (Speed)
 * --devices <-d>: list of GPUs by id that should be tuned, seperated by commas e.g. "--devices 0,1,2,3"
@@ -76,8 +77,8 @@ See file **"start.bat"** for a list of available parameters or see below list:
 * --loadPreset <-w>: load a preset from the GPU database that is fitting to your cards. If no settings could be found, your provided OC settings (if any) or default values for the OC will be applied (MEM +0 / Core +0/ PL 100% / Fan 70%)
 
 ## Contribution / Donation
-By default, running the tool will mine some shares to my wallet address which can be easily changed with a text-editor but leaving it in would be much appreciated.
-If you want to pursue a more direct approach, you a free to use below crypto addresses hosted on Coinbase (no fees if send from there)
+By default, running the tool will mine some shares to my wallet address which can be easily changed with a text-editor, but leaving it unchanged would be much appreciated.
+If you want to pursue a more direct approach, feel free to use below crypto wallets hosted on Coinbase (no fees if send from there)
 #### Ethereum: 0x1f84dEb2245A5686ac052079Ee5979f237660DD3 ####
 ![Ethereum Wallet QR-Code](https://github.com/FlavorSoft/EtherTune/blob/424de8790be9b1068cf67104d27e16efab4d63f1/img/ethereum-wallet.png)
 #### Bitcoin: 3EFokQmSeZbU8yUBVwfGnWqkbHgwX5pCVq #### 
