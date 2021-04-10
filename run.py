@@ -7,11 +7,14 @@ from controller import Controller
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"h:t:d:f:s:x:y:o:c:m:p:e:i:w",["mode=", "devices=", "fans=", "steps=", "shares=", "datapoints=", "offset=", "coreUC=", "memOC=", "powerLimit=", "powerCost=", "dollarPerMHash=", "loadPreset"])
+        opts, args = getopt.getopt(argv,"h:t:d:f:s:x:y:o:c:m:p:e:i:w",["mode=", "devices=", "fans=", "steps=", "shares=", "datapoints=", "offset=", "coreUC=", "memOC=", "powerLimit=", "powerCost=", "dollarPerMHash=", "loadPreset", "miner="])
     except getopt.GetoptError as e:
         print(str(e))
-        print('run.py --mode <0 (efficiency) / 1 (speed)> --devices <0,1..nbr of GPUs> --fans <speed for each GPU> --steps <stepsize for OC> --shares <nbr of shares for validation> --datapoints <nbr of Datapoints for validation> --offset <for comparing speeds> --coreUC <core underclock values> --memOC <memory overclock values> --powerLimit <power limits>')
+        print('run.py --mode <0 (efficiency) / 1 (speed)> --devices <0,1..nbr of GPUs> --fans <speed for each GPU> --steps <stepsize for OC> --shares <nbr of shares for validation> --datapoints <nbr of Datapoints for validation> --offset <for comparing speeds> --coreUC <core underclock values> --memOC <memory overclock values> --powerLimit <power limits> --miner <mining software>')
         sys.exit(2)
+
+    # by default, gminer is selected
+    miner = "gminer"
 
     # defaults for GPUs
     mode = 0
@@ -73,13 +76,15 @@ def main(argv):
             dollarPerMHash = float(arg)
         elif opt in ("-w", "--loadPreset"):
             loadPreset = True
+        elif opt in ("--miner"):
+            miner = arg
 
     if mode == 2 and (dollarPerMHash == None or powerCost == None):
         mode = 0
         print("mode 2 can only be applied if \"--powerCost\" and \"--dollarPerMHash\" args are given, falling back to mode 0")
 
     # Start Optimizing Process
-    Controller("t-rex", mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, margin, coreUCs, memOCs, powerLimits, powerCost, dollarPerMHash, loadPreset)
+    Controller(miner, mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, margin, coreUCs, memOCs, powerLimits, powerCost, dollarPerMHash, loadPreset)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

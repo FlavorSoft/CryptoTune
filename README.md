@@ -75,6 +75,7 @@ See file **"start.bat"** for a list of available parameters or see below list:
 * --powercost <-e>: define how much your power costs $/kWh, needed to calculate profitability in mode 2
 * --dollarPerMHash <-i>: define the value of 1 MHash, needed to calculate profitability in mode 2 - you can find out via https://whattomine.com/ - or pick 0.0966 (2020-04-07)
 * --loadPreset <-w>: load a preset from the GPU database that is fitting to your cards. If no settings could be found, your provided OC settings (if any) or default values for the OC will be applied (MEM +0 / Core +0/ PL 100% / Fan 70%)
+* --miner: define which mining software to use. Default: gminer Supported: gminer, t-rex
 
 ## Contribution / Donation
 By default, running the tool will mine some shares to my wallet address which can be easily changed with a text-editor, but leaving it unchanged would be much appreciated.
