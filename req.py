@@ -12,9 +12,9 @@ class MinerDataRequester:
 
     def getData(self):
         try:
-            r = requests.get(self.path)
+            r = requests.get(self.path, timeout=1)
             if r.status_code == 200 and r is not None and r.json() is not None:
                 return self.responseParser.Parse(r.json())
-        except:
-            return None
-        return None
+            return self.log.Warning("Mining software did not correctly respond. Code %i: Content: %s" % (r.status_code, r.text))
+        except Exception as e:
+            return self.log.Warning("Could not get Mining Software Data: %s" % str(e))

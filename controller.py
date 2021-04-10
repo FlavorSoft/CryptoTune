@@ -97,7 +97,7 @@ class Controller:
 
         # first tune mem and core clocks until all GPUs are finished
         tuningDone = 0
-        self.requiresRestart = True
+        self.requiresRestart = False
         saveOldData = False
         self.ResetGPUs(False, False)
         while tuningDone < len(self.gpus):
@@ -123,7 +123,11 @@ class Controller:
 
             saveOldData = True
             minerData = self.req.getData()
-            
+            if minerData == None:
+                self.log.Warning("Received Mining Data could not be read, wait and skip")
+                time.sleep(1)
+                continue
+    
             # tune GPUs
             tuningDone = self.OC(minerData)
 
@@ -181,11 +185,6 @@ class Controller:
     def OC(self, minerData):
         # execute GPU clock-changes (require mining restart) and see if they are done
         clockingDone = 0
-        if minerData == None:
-            self.log.Warning("Received Mining Data could not be read, wait and skip")
-            time.sleep(1)
-            return 0
-
         self.requiresRestart = False
         for i in range(len(self.gpus)):
             gpu = self.gpus[i]
