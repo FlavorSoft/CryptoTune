@@ -58,6 +58,11 @@ class Controller:
             if len(fanSpeeds) <= i:
                 fanSpeeds.append(70)
 
+            # added warning for low fanSpeeds
+            if fanSpeeds[i] < 30:
+                self.log.Warning("GPU%i: low fanspeed (%i%%) configured - press ENTER to continue anyways" % (devIds[i], fanSpeeds[i]))
+                input()
+
             gpu = GPU(self.log, devIds[i], mode, memOCs[i], coreUCs[i], fanSpeeds[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH, powerCost, dollarPerMHash)
 
             if gpu.found:

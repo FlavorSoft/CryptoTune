@@ -77,7 +77,7 @@ def main(argv):
         mode = 0
         print("mode 2 can only be applied if \"--powerCost\" and \"--dollarPerMHash\" args are given, falling back to mode 0")
 
-    #   miner "gminer", devIds [0] fan 70, steps 10, shareCount 10, nbrOfDatapoints 10, marginInMH 0.25, coreUC 50, memOC 1200, powerLimit 270
+    # Start Optimizing Process
     Controller("gminer", mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, margin, coreUCs, memOCs, powerLimits, powerCost, dollarPerMHash, loadPreset)
 
 if __name__ == "__main__":
