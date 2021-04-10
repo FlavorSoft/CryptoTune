@@ -58,7 +58,7 @@ class StartMiner:
         #print ("ExePath: %s" % exePath)
         
         #print (configPath)
-        parameters = self.config["parameters"].replace("#core#", str(coreUCs)).replace("#mem#", str(memOCs)).replace("#fan#", str(self.fans)).replace("#dev#", str(self.devIds)).replace("#worker#", self.workerName).replace("#port#", str(self.config["api"]["port"]))
+        parameters = self.config["parameters"].replace("#core#", str(coreUCs)).replace("#mem#", str(memOCs)).replace("#fan#", str(self.fans)).replace("#dev#", str(self.devIds)).replace("#worker#", self.workerName).replace("#port#", str(self.config["api"]["port"])).replace("#host#", self.config["api"]["host"])
         if not self.isWindows:
             parameters = self.config["parametersUnix"].replace("#core#", str(coreUCs)).replace("#mem#", str(memOCs)).replace("#fan#", str(self.fans)).replace("#dev#", str(self.devIds)).replace("#worker#", self.workerName)
         

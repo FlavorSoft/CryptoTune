@@ -40,11 +40,11 @@ This software tracks your GPUs state every second, creates statistics from that 
 [![EtherTune Demo on youtube](https://img.youtube.com/vi/tJo8EarZyzM/0.jpg)](https://www.youtube.com/watch?v=tJo8EarZyzM)
 
 ### Mining Software
-There is a miner (GMiner 2.50) included, but as code cannot be easily checked i strongly recommend you download and **add your own mining binaries** and rename (if needed) to "miner.exe".
+There are two miners (GMiner 2.50 & T-Rex Miner 0.20) included, but as code cannot be easily checked i strongly recommend you download and **add your own mining binaries** and rename (if needed) to "miner.exe".
 
 ## Limitations
 - Windows 10 only
-- GMiner only (NBMiner and others planned)
+- GMiner & T-Rex Miner only (NBMiner and others planned)
 
 ## Requirements
 Following requirements need to be met in order for the tool to work properly

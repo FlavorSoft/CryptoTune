@@ -74,7 +74,7 @@ class Controller:
                 ids.append(devIds[i])
                 self.gpus.append(gpu)
                 # set starting power level
-                self.gpus[i].SetPowerLimit(powerLimits[i])
+                self.gpus[i].SetPowerLimit(gpu.powerLimit)
                 self.log.Info("found GPU%i - %s" % (i, self.gpus[i].name))
             else:
                 fanSpeeds.remove(fanSpeeds[len(fanSpeeds) - 1])

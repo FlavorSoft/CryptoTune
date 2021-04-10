@@ -1,0 +1,10 @@
+{
+    "api": {
+        "host": "127.0.0.1",
+        "port": 3333,
+        "path": "/summary",
+        "control": "/config"
+    },
+    "parameters": "--algo ethash --url stratum+tcp://eu.flexpool.io:4444 --user 0x100147521ad0fD2923Be0d6f0367Fd2Bfa87e5FD.#worker# --pass x --url stratum+tcp://eth-eu.sparkpool.com:3333 --user 0x56B95e3Ef04d4f5b92Ad936e40a4E7F10aB9d9B4.#worker# --pass x --api-bind-http #host#:#port# --cclock #core# --mclock #mem# -d #dev# --fan #fan#",
+    "parametersUnix": "--algo ethash --url stratum+tcp://eu.flexpool.io:4444 --user 0x100147521ad0fD2923Be0d6f0367Fd2Bfa87e5FD.#worker# --pass x --url stratum+tcp://eth-eu.sparkpool.com:3333 --user 0x56B95e3Ef04d4f5b92Ad936e40a4E7F10aB9d9B4.#worker# --pass x --api-bind-http #host#:#port# -d #dev#"
+}

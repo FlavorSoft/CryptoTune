@@ -1,9 +1,11 @@
 from expections import *
 
-from gMinerParser import GMinerParser
+from apiParser.gMinerParser import GMinerParser
+from apiParser.tRexParser import TRexParser
 
 validMiners = []
 validMiners.append({"name":"gminer", "parser": GMinerParser()})
+validMiners.append({"name":"t-rex", "parser": TRexParser()})
 
 class ResponseParser:
     def __init__(self, miner):
