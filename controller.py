@@ -11,12 +11,13 @@ maxWaitForMiningSoftwareApi = 3
 sleepBetweenTuningRuns = 1
 
 class Controller:
-    def __init__(self, miner, mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, marginInMH, coreUCs, memOCs, powerLimits, powerCost, dollarPerMHash, loadPreset):
+    def __init__(self, miner, algo, mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, marginInMH, coreUCs, memOCs, powerLimits, powerCost, dollarPerMHash, loadPreset, skipMem, skipCore, skipPower):
    
         # give the worker a name to separate data on pool
         self.workerName = socket.gethostname().replace("-","").replace(".","").replace("_","")
         # anonymize workerName
         self.workerName = hashlib.md5(self.workerName.encode('utf-8')).hexdigest()
+        self.algo = algo
 
         # initialize logging utils
         self.log = Log("DEBUG")
@@ -63,13 +64,13 @@ class Controller:
                 self.log.Warning("GPU%i: low fanspeed (%i%%) configured - press ENTER to continue anyways" % (devIds[i], fanSpeeds[i]))
                 input()
 
-            gpu = GPU(self.log, devIds[i], mode, memOCs[i], coreUCs[i], fanSpeeds[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH, powerCost, dollarPerMHash)
+            gpu = GPU(self.log, devIds[i], mode, memOCs[i], coreUCs[i], fanSpeeds[i], steps, powerLimits[i], nbrOfShares, nbrOfDatapoints, marginInMH, powerCost, dollarPerMHash, skipMem, skipCore, skipPower)
 
             if gpu.found:
                 # if preset for GPUs should be loaded, do this now
                 if loadPreset:
                     # currently only ethash supported
-                    self.ApplyPreset(gpu, "ethash")
+                    self.ApplyPreset(gpu, self.algo)
 
                 ids.append(devIds[i])
                 self.gpus.append(gpu)
@@ -150,12 +151,14 @@ class Controller:
 
     def ApplyPreset(self, gpu, algo):
         settings = gpuSettingsLoader.GetSettings(gpu.name)
-        if settings is not None and settings[algo] is not None:
-            self.log.Info("Loaded Preset for GPU%i %s" % (gpu.id, gpu.name))
+        if settings is not None and algo in settings:
+            self.log.Info("GPU%i: Presets loaded" % (gpu.id))
             gpu.memOC = settings[algo]["memOC"]
             gpu.coreUC = settings[algo]["coreUC"]
             gpu.fanSpeed = settings[algo]["fan"]
             gpu.powerLimit = settings[algo]["powerLimit"]
+        else:
+            self.log.Warning("GPU%i: could not load Presets for algorithm \"%s\", will apply defaults" % (gpu.id, algo))
 
     def RemoveOverheatingGPUs(self):
         for gpu in self.gpus:
@@ -210,7 +213,7 @@ class Controller:
             coreUCs += str(self.gpus[i].coreUC) + " "
 
         # start MiningSoftware with gatheres settings
-        self.ms.Start(memOCs, coreUCs)
+        self.ms.Start(self.algo, memOCs, coreUCs)
 
         # wait for the first API request to answer correctly
         res = None

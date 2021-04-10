@@ -7,7 +7,7 @@ from calc import Calculator
 wattSteps = 2
 
 class GPU:
-    def __init__(self, log, id, mode, memOC, coreUC, fanSpeed, steps, powerLimit, nbrOfShares, nbrOfDatapoints, marginInMH, powerCost, dollarPerMHash):
+    def __init__(self, log, id, mode, memOC, coreUC, fanSpeed, steps, powerLimit, nbrOfShares, nbrOfDatapoints, marginInMH, powerCost, dollarPerMHash, skipMem, skipCore, skipPower):
         # basics
         self.id = id
         self.log = log
@@ -16,9 +16,9 @@ class GPU:
         self.nvTool = NVTool(self.log, self.id)
 
         # overall Tuning Variables
-        self.maxMemClockFound = False
-        self.minCoreClockFound = False
-        self.minPowerLimitFound = False
+        self.maxMemClockFound = skipMem
+        self.minCoreClockFound = skipCore
+        self.minPowerLimitFound = skipPower
 
         # HW settings
         self.fanSpeed = fanSpeed
@@ -129,7 +129,7 @@ class GPU:
         # check if data is OK - and we are not thermal-throttling will require a restart in the next run
         if not self.IsValidData(minerData):
             self.InvalidDataCreated()
-            return False 
+            return False
 
         # save data as it is valid
         self.AddData(minerData)
@@ -144,20 +144,20 @@ class GPU:
         if not self.maxMemClockFound and not self.tuningDone:
             self.log.Debug("GPU%i: Tuning Memory OC" % (self.id))
             self.DoMemOC()
-            return
+            return False
 
         # CORE UNDERCLOCK NEEDS A RESTART IN MINING SOFTWARE
         # only change core undervolt if max memory oc was found and no prior change is waiting to be applied
         if self.maxMemClockFound and not self.minCoreClockFound and not self.tuningDone:
             self.log.Debug("GPU%i: Tuning Core UC" % (self.id))
             self.DoCoreUC()
-            return
+            return False
         
         # POWER LIMIT CHANGE CAN BE APPLIED WITHOUT MINING SOFTWARE RESTART
-        if self.maxMemClockFound and self.minCoreClockFound and not self.requiresRestart and not self.tuningDone:
+        if not self.minPowerLimitFound and self.maxMemClockFound and self.minCoreClockFound and not self.requiresRestart and not self.tuningDone:
             self.log.Debug("GPU%i: Tuning Power Limit" % (self.id))
             self.ReducePowerLimit()
-            return
+            return False
 
         return self.maxMemClockFound and self.minCoreClockFound and self.minPowerLimitFound
 
@@ -269,6 +269,7 @@ class GPU:
         if saveOldData and not crashed:
             self.lastHWData = self.currentHWData
             self.lastMinerData = self.currentMinerData
+            self.lastShareCount = self.currentMinerData[len(self.currentMinerData) - 1].accepted
             self.SaveMaxAvgSpeed()
         self.currentHWData = []
         self.currentMinerData = []
@@ -278,7 +279,7 @@ class GPU:
         self.tuningTries = 0
 
     def SaveMaxAvgSpeed(self):
-        speed = self.calc.Speed(self.lastMinerData)
+        speed = self.calc.Speed(self.currentMinerData)
         if speed > self.maxSpeed:
             self.maxSpeed = speed
 
