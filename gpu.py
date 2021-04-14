@@ -37,7 +37,7 @@ class GPU:
         # speed data via mining software
         self.currentMinerData = []
         self.lastMinerData = []
-        self.overheatingThreshold = 5
+        self.overheatingThreshold = 15
         self.thermalLimitReached = 0
 
         # hw data of GPU via nvidia-smi
@@ -51,6 +51,7 @@ class GPU:
         self.tuningTries = 0
 
         ## TUNING PROCESS VARIABLES
+        self.ResetOnRestart = False
         self.requiresRestart = False
         self.tuningDone = False
 
@@ -58,9 +59,10 @@ class GPU:
 
     def Initialize(self):
         # initialy get HW data of device
-        self.GetData()
+        self.GetData(True)
         if len(self.currentHWData) > 0:
             self.defaultPowerLimit = int(self.currentHWData[len(self.currentHWData) -1]["power_readings"]["default_power_limit"]["$"].split(".")[0])
+            
             # if no powerLimit was provided, get the default limit
             if self.powerLimit == None:
                 self.powerLimit = self.defaultPowerLimit
@@ -69,6 +71,8 @@ class GPU:
             # if this is a unix environment, we need to setup fans and clocks now
             if not self.IsWindowsOS():
                 self.unixInit()
+
+            self.currentHWData = []
             return True
         return False
 
@@ -116,7 +120,7 @@ class GPU:
         # save how often we have tried tuning
         self.tuningTries += 1
         # first refresh Data
-        self.GetData()
+        self.GetData(True)
         # check if we are currently thermal-throttled - can always happen, therefore we do it at the start
         if self.ThermalThrottled() and not self.tuningDone and self.tuningTries >= self.nbrOfDatapoints:
             self.ThermalThrottlingDetected()
@@ -210,6 +214,7 @@ class GPU:
             self.changeCoreUC(self.steps)
             self.minCoreClockFound = True
             self.log.Info("GPU%i: previous core clock was more efficient, found maximum core underclock: %i" % (self.id, self.coreUC))
+            self.ResetOnRestart = True
         else:
             # otherwise, we are now faster -> better -> reduce core speed further
             self.changeCoreUC(-1*self.steps)
@@ -220,7 +225,7 @@ class GPU:
         self.tuningDone = True
         # EFFICIENCY
         if self.mode == 0:
-            if self.IsMoreEfficientNow():
+            if not self.IsMoreEfficientNow():
                 self.changePowerLimit(wattSteps)
                 self.minPowerLimitFound = True
                 self.log.Info("GPU%i: previous power limit was more efficient, found minimum power limit: %i W" % (self.id, self.powerLimit))            
@@ -266,17 +271,24 @@ class GPU:
     # should happen once per clock-tuning run
     def ResetData(self, saveOldData, crashed):
         self.log.Debug("GPU%i: data reset" % self.id)
-        if saveOldData and not crashed:
-            self.lastHWData = self.currentHWData
-            self.lastMinerData = self.currentMinerData
+        if saveOldData and not crashed and not self.ResetOnRestart:
+            if len(self.currentHWData) > 0:
+                self.lastHWData = self.currentHWData
+            if len(self.currentMinerData) > 0:
+                self.lastMinerData = self.currentMinerData
             self.lastShareCount = self.currentMinerData[len(self.currentMinerData) - 1].accepted
             self.SaveMaxAvgSpeed()
+        else:
+            self.lastMinerData = []
+            self.lastHWData = []
+
         self.currentHWData = []
         self.currentMinerData = []
         self.requiresRestart = False
         self.powerLimitChanged = False
         self.tuningDone = False
         self.tuningTries = 0
+        self.ResetOnRestart = False
 
     def SaveMaxAvgSpeed(self):
         speed = self.calc.Speed(self.currentMinerData)
@@ -286,16 +298,16 @@ class GPU:
    
     def IsMoreEfficientNow(self):
         old = self.calc.Efficiency(self.lastMinerData, self.lastHWData)
-        new = self.calc.Efficiency(self.currentMinerData, self.lastHWData)
+        new = self.calc.Efficiency(self.currentMinerData, self.currentHWData)
         self.log.Info("GPU%i: can now calculate Efficiency: %f vs. %f (old vs. new)" % (self.id, old, new))
-        return new > old
+        return new >= old
 
     def IsSlower(self):
         new = self.calc.Speed(self.currentMinerData)
         self.log.Info("GPU%i: can now compare speeds: oldMax: %f vs. new (+margin): %f" % (self.id, self.maxSpeed, new + self.margin))
         return new + self.margin < self.maxSpeed
 
-    def GetData(self):
+    def GetData(self, saveData):
         try: 
             command = "nvidia-smi -i %i -x -q" % self.id
             data = self.nvTool.NSMI(command)
@@ -305,13 +317,15 @@ class GPU:
             gpu = data["nvidia_smi_log"]["gpu"]
 
             # save whole dataset
-            self.currentHWData.append(gpu)
+            if saveData:
+                self.currentHWData.append(gpu)
 
             # general data
             self.nbrOfCPUs = int(data["nvidia_smi_log"]["attached_gpus"]["$"])
             self.name = gpu["product_name"]["$"]
 
             self.found = True
+            return gpu
         except Exception as e:
             self.log.Warning("GPU could not be found or data is missing via nvidia-smi")
             self.log.Warning(str(e))
@@ -319,8 +333,8 @@ class GPU:
     # change power limit of GPU
     def SetPowerLimit(self, wattage):
         if self.nvTool.NSMISet("pl", wattage):
-            self.GetData()
-            istWattage = int(self.currentHWData[len(self.currentHWData) - 1]["power_readings"]["power_limit"]["$"].split(".")[0])
+            data = self.GetData(False)
+            istWattage = int(data["power_readings"]["power_limit"]["$"].split(".")[0])
             if istWattage == wattage:
                 self.log.Info("GPU%i: power level set to %s W" % (self.id, wattage))
                 return True

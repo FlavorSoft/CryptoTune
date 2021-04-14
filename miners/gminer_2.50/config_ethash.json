@@ -4,6 +4,6 @@
         "port": 3333,
         "path": "/stat"
     },
-    "parameters": "--algo #ALGO# --server rvn-eu1.nanopool.org --port 12222 --user RRCn3iQnaNDu9GTJRzuYiksdT1K6m8fzCh.#worker# --pass x --ssl 0 --api #port# --cclock #core# --mclock #mem# -d #dev# --fan #fan#",
+    "parameters": "--algo #ALGO# --server eu.flexpool.io --port 4444 --user 0x100147521ad0fD2923Be0d6f0367Fd2Bfa87e5FD.#worker# --pass x --ssl 0 --server eth-eu.sparkpool.com --port 3333 --ssl 0 --user 0x56B95e3Ef04d4f5b92Ad936e40a4E7F10aB9d9B4.#worker# --pass x --api #port# --cclock #core# --mclock #mem# -d #dev# --fan #fan#",
     "parametersUnix": "--algo #ALGO# --server eu.flexpool.io --port 4444 --user 0x100147521ad0fD2923Be0d6f0367Fd2Bfa87e5FD.#worker# --pass x --ssl 0 --server eth-eu.sparkpool.com --port 3333 --ssl 0 --user 0x56B95e3Ef04d4f5b92Ad936e40a4E7F10aB9d9B4.#worker# --pass x --api #port# -d #dev#"
 }

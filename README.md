@@ -1,5 +1,5 @@
-# EtherTune
-Python script to automatically find optimized and stable GPU overclock settings to mine Ethereum.
+# CryptoTune
+Python script to automatically find optimized and stable GPU overclock settings to mine Ethereum and other CryptoCoins.
 
 
 ## Warning

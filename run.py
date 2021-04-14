@@ -7,7 +7,7 @@ from controller import Controller
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"a:h:t:d:f:s:x:y:o:c:m:p:e:i:w",["algo=", "mode=", "devices=", "fans=", "steps=", "shares=", "datapoints=", "offset=", "coreUC=", "memOC=", "powerLimit=", "powerCost=", "dollarPerMHash=", "loadPreset", "miner=", "skipMem", "skipCore", "skipPower"])
+        opts, args = getopt.getopt(argv,"a:h:t:d:f:s:x:y:o:c:m:p:e:i:w",["algo=", "mode=", "devices=", "fans=", "steps=", "shares=", "datapoints=", "offset=", "coreUC=", "memOC=", "powerLimit=", "powerCost=", "dollarPerMHash=", "loadPreset", "miner=", "skipMem", "skipCore", "skipPower", "watchdog"])
     except getopt.GetoptError as e:
         print(str(e))
         print('run.py --algo <ethash> --mode <0 (efficiency) / 1 (speed)> --devices <0,1..nbr of GPUs> --fans <speed for each GPU> --steps <stepsize for OC> --shares <nbr of shares for validation> --datapoints <nbr of Datapoints for validation> --offset <for comparing speeds> --coreUC <core underclock values> --memOC <memory overclock values> --powerLimit <power limits> --miner <mining software>')
@@ -34,6 +34,7 @@ def main(argv):
     skipMem = False
     skipCore = False
     skipPower = False
+    watchdog = False
 
     for opt, arg in opts:
         if opt == '-h':
@@ -90,13 +91,15 @@ def main(argv):
             skipCore = True
         elif opt in ("--skipPower"):
             skipPower = True
+        elif opt in ("--watchdog"):
+            watchdog = True
 
     if mode == 2 and (dollarPerMHash == None or powerCost == None):
         mode = 0
         print("mode 2 can only be applied if \"--powerCost\" and \"--dollarPerMHash\" args are given, falling back to mode 0")
 
     # Start Optimizing Process
-    Controller(miner, algo, mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, margin, coreUCs, memOCs, powerLimits, powerCost, dollarPerMHash, loadPreset, skipMem, skipCore, skipPower)
+    Controller(miner, algo, mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, margin, coreUCs, memOCs, powerLimits, powerCost, dollarPerMHash, loadPreset, skipMem, skipCore, skipPower, watchdog)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

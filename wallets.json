@@ -1,6 +1,16 @@
 [
     {
         "algo": "ethash",
-        "address": ""
+        "address": "",
+        "pools": [
+            {
+                "host": "eu.flexpool.com",
+                "port": 3333 
+            },
+            {
+                "host": "eu.flexpool.com",
+                "port": 3333 
+            }
+        ]
     }
 ]

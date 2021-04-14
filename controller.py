@@ -11,7 +11,7 @@ maxWaitForMiningSoftwareApi = 3
 sleepBetweenTuningRuns = 1
 
 class Controller:
-    def __init__(self, miner, algo, mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, marginInMH, coreUCs, memOCs, powerLimits, powerCost, dollarPerMHash, loadPreset, skipMem, skipCore, skipPower):
+    def __init__(self, miner, algo, mode, devIds, fanSpeeds, steps, nbrOfShares, nbrOfDatapoints, marginInMH, coreUCs, memOCs, powerLimits, powerCost, dollarPerMHash, loadPreset, skipMem, skipCore, skipPower, watchdog):
    
         # give the worker a name to separate data on pool
         self.workerName = socket.gethostname().replace("-","").replace(".","").replace("_","")
@@ -70,7 +70,7 @@ class Controller:
                 # if preset for GPUs should be loaded, do this now
                 if loadPreset:
                     # currently only ethash supported
-                    self.ApplyPreset(gpu, self.algo)
+                    self.ApplyPreset(gpu, self.algo, i, coreUCs, memOCs, fanSpeeds)
 
                 ids.append(devIds[i])
                 self.gpus.append(gpu)
@@ -101,7 +101,8 @@ class Controller:
         self.requiresRestart = False
         saveOldData = False
         self.ResetGPUs(False, False)
-        while tuningDone < len(self.gpus):
+        finishMessageWritten = False
+        while tuningDone < len(self.gpus) or watchdog:
             # test if running mining Software has crashed
             crashed = False
             if self.ms.isRunning and self.ms.ProcessesChanged():
@@ -132,29 +133,39 @@ class Controller:
             # tune GPUs
             tuningDone = self.OC(minerData)
 
+            # as we are complete, print resultdata of each GPU
+            if not finishMessageWritten and tuningDone >= len(self.gpus):
+                finishMessageWritten = True
+                self.log.Info("### TUNING COMPLETED FOR %i GPUS with Mode: \"%s\" ###" % (len(self.gpus), self.modeText))
+                for gpu in self.gpus:
+                    plPerc = math.ceil(100.0 / gpu.defaultPowerLimit * gpu.powerLimit)
+                    self.log.Info("GPU%i: Max Memory Overclock: %i\tMax Core UnderClock: %i\tMin Power Limit: %iW (%i%%)\tFan: %i%%" % (gpu.id, gpu.memOC, gpu.coreUC, gpu.powerLimit, plPerc, gpu.fanSpeed))
+                
+                for gpu in self.overheatedGPUs:
+                    plPerc = math.ceil(100.0 / gpu.defaultPowerLimit * gpu.powerLimit)
+                    self.log.Info("!OVERHEATED! GPU%i: Memory Overclock: %i\tCore UnderClock: %i\tPower Limit: %iW (%i%%)\tFan: %i%%" % (gpu.id, gpu.memOC, gpu.coreUC, gpu.powerLimit, plPerc, gpu.fanSpeed))
+                if watchdog:
+                    self.log.Info("Will continue, as watchdog is set")
+
             # wait some time between runs
             time.sleep(sleepBetweenTuningRuns)
 
-        # as we are complete, print resultdata of each GPU
-        self.log.Info("### TUNING COMPLETED FOR %i GPUS with Mode: \"%s\" ###" % (len(self.gpus), self.modeText))
-        for gpu in self.gpus:
-            plPerc = math.ceil(100.0 / gpu.defaultPowerLimit * gpu.powerLimit)
-            self.log.Info("GPU%i: Max Memory Overclock: %i\tMax Core UnderClock: %i\tMin Power Limit: %iW (%i%%)\tFan: %i%%" % (gpu.id, gpu.memOC, gpu.coreUC, gpu.powerLimit, plPerc, gpu.fanSpeed))
         
-        for gpu in self.overheatedGPUs:
-            plPerc = math.ceil(100.0 / gpu.defaultPowerLimit * gpu.powerLimit)
-            self.log.Info("!OVERHEATED! GPU%i: Memory Overclock: %i\tCore UnderClock: %i\tPower Limit: %iW (%i%%)\tFan: %i%%" % (gpu.id, gpu.memOC, gpu.coreUC, gpu.powerLimit, plPerc, gpu.fanSpeed))
 
         # stop mining if no GPU is left
         if len(self.gpus) == 0:
             self.ms.Stop()
 
-    def ApplyPreset(self, gpu, algo):
+    def ApplyPreset(self, gpu, algo,  i, clockUC, memOC, fanSpeeds):
         settings = gpuSettingsLoader.GetSettings(gpu.name)
         if settings is not None and algo in settings:
             self.log.Info("GPU%i: Presets loaded" % (gpu.id))
-            gpu.memOC = settings[algo]["memOC"]
+            # only apply preset data if no manual data was given for this GPU
+            #if len(clockUC) <= i:
             gpu.coreUC = settings[algo]["coreUC"]
+            #if len(memOC) <= i:
+            gpu.memOC = settings[algo]["memOC"]
+            #if len(fanSpeeds) <= i:
             gpu.fanSpeed = settings[algo]["fan"]
             gpu.powerLimit = settings[algo]["powerLimit"]
         else:

@@ -5,5 +5,11 @@
         "powerLimit": 250,
         "fan": 70
     },
+    "kawpow": {
+        "memOC": 400,
+        "coreUC": 200,
+        "powerLimit": 260,
+        "fan": 50
+    },
     "comment": "OC Settings provided by FlavorSoft"
 }
