@@ -6,7 +6,7 @@ def GetSettings(deviceName):
     if len(arr) < 3:
         return None
 
-    # cut "NVIDIA" as it's not necessary
+    # cut "NVIDIA" as it's not necessary - on UNIX it would be "GeForce RTX 3060 Ti" only
     if len(arr) == 4 and arr[0] == "NVIDIA":
         arr = arr[1:]
 
