@@ -10,7 +10,7 @@ class NVTool:
     def NVidiaSettings(self, name, value):
         command = None
         if name == "fan":
-            command = "nvidia-settings -a [gpu:%i]/GPUFanControlState=1 -a [fan:0]/GPUTargetFanSpeed=%i" % (self.gpuId, value)
+            command = "nvidia-settings -a [gpu:%i]/GPUFanControlState=1 -a [fan:0]/GPUTargetFanSpeed=%i -a [fan:1]/GPUTargetFanSpeed=%i -a [fan:2]/GPUTargetFanSpeed=%i" % (self.gpuId, value, value ,value)
         if name == "memOC":
             command = "nvidia-settings -a [gpu:%i]/GPUMemoryTransferRateOffset[3]=%i" % (self.gpuId, value)
         if name == "coreUC":
@@ -20,6 +20,7 @@ class NVTool:
             self.log.Error("invalid value for change in nvidia-settings")
             return False
 
+        self.log.Debug(command)
         process = Popen(command.split(" "), stdout=PIPE)
         output = process.communicate()
         exit_code = process.wait()
