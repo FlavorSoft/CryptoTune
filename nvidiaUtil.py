@@ -14,7 +14,7 @@ class NVTool:
         if name == "memOC":
             command = "nvidia-settings -a [gpu:%i]/GPUMemoryTransferRateOffset[3]=%i" % (self.gpuId, value)
         if name == "coreUC":
-            command = "nvidia-settings -a [gpu:%i]/GPUGraphicsClockOffset[2]=%i" % (self.gpuId, value)
+            command = "nvidia-settings -a [gpu:%i]/GPUGraphicsClockOffset[3]=%i" % (self.gpuId, value)
         
         if command == None:
             self.log.Error("invalid value for change in nvidia-settings")

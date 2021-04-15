@@ -1,7 +1,5 @@
 #!/bin/bash
-sudo nvidia-xconfig --cool-bits=31 --allow-empty-initial-configuration
-sudo xinit &
-export DISPLAY=:0.0
-c
-echo -ne '\n' | sudo nvidia-settings -c :0 &
+nvidia-xconfig -a --allow-empty-initial-configuration --cool-bits=28 -o nvidia-xorg.conf
+sudo tmux new -d 'sudo X -config nvidia-xorg.conf :1'
+export DISPLAY=:1
 nvidia-settings -a [gpu:0]/GPUFanControlState=1
