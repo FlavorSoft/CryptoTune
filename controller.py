@@ -26,6 +26,8 @@ class Controller:
         if platform.system() != "Windows":
             subprocess.call(["chmod", "a+x", "./prepareUnix.sh"])
             subprocess.call(["./prepareUnix.sh"])
+            logger.Debug("waiting some time for X-Server to start up")
+            time.sleep(15)
 
         # utility
         if mode < 0 or mode > 2:
